@@ -136,7 +136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a99158ce93421cf4e989062eaea95abe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dropEffectPrefab: {fileID: 3351849235051515275, guid: 3c9fd6278417d4f48a4120aa534d09d5, type: 3}
+  dropEffectPrefab: {fileID: 8129137485081867221, guid: 7aa5c665526af634b8d409ca6b3272cf, type: 3}
 --- !u!61 &4515467092998193759
 BoxCollider2D:
   m_ObjectHideFlags: 0
