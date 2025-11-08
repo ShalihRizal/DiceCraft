@@ -18,6 +18,7 @@ public class DiceDrag: MonoBehaviour {
   private Dice diceScript;
 
   public GameObject dropEffectPrefab;
+  public GameObject mergeEffectPrefab;
 
   private Vector3 highlightedScale = new Vector3(0.85f, 0.85f, 1f); // slightly bigger
 
@@ -161,7 +162,17 @@ public class DiceDrag: MonoBehaviour {
                             spawner.ReleaseCell(parentCell);
                             
                             GameEvents.RaiseDiceMerged(diceScript.diceData);
-                            Destroy(gameObject);
+              Destroy(gameObject);
+                            
+                            if (mergeEffectPrefab != null)
+{
+    Vector3 effectPos = otherDice.parentCell != null 
+        ? otherDice.parentCell.position 
+        : otherDice.transform.position;
+
+    GameObject effect = Instantiate(mergeEffectPrefab, effectPos, Quaternion.identity);
+}
+
                         mergeOrSwapOccurred = true;
                         break;
                     }
@@ -193,7 +204,9 @@ public class DiceDrag: MonoBehaviour {
                         
                         if (dropEffectPrefab != null)
                 {
-                    Instantiate(dropEffectPrefab, transform.position, Quaternion.identity);
+                    Vector3 effectPos = parentCell != null ? parentCell.position : transform.position;
+GameObject effect = Instantiate(dropEffectPrefab, effectPos, Quaternion.identity);
+
                 }
 
                         mergeOrSwapOccurred = true;
@@ -221,7 +234,9 @@ public class DiceDrag: MonoBehaviour {
                 transform.DOScale(originalScale, 0.15f).SetEase(Ease.OutBack);
                 if (dropEffectPrefab != null)
                 {
-                    Instantiate(dropEffectPrefab, transform.position, Quaternion.identity);
+                    Vector3 effectPos = parentCell != null ? parentCell.position : transform.position;
+GameObject effect = Instantiate(dropEffectPrefab, effectPos, Quaternion.identity);
+
                 }
                 return;
             }
