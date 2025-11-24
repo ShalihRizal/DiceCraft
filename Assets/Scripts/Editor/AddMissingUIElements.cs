@@ -265,42 +265,66 @@ public class AddMissingUIElements : EditorWindow
 
         RewardUI rewardUI = rewardPanelGO.AddComponent<RewardUI>();
         rewardUI.panel = rewardPanelGO;
-        rewardUI.rewardButtons = new Button[3];
-        rewardUI.rewardTexts = new TextMeshProUGUI[3];
+        rewardUI.panel = rewardPanelGO;
+        
+        // Create Cards Container
+        GameObject containerGO = new GameObject("CardsContainer");
+        containerGO.transform.SetParent(rewardPanelGO.transform, false);
+        RectTransform containerRect = containerGO.AddComponent<RectTransform>();
+        containerRect.anchorMin = new Vector2(0.5f, 0.5f);
+        containerRect.anchorMax = new Vector2(0.5f, 0.5f);
+        containerRect.sizeDelta = new Vector2(600, 300);
+        containerRect.anchoredPosition = Vector2.zero;
+        
+        HorizontalLayoutGroup layout = containerGO.AddComponent<HorizontalLayoutGroup>();
+        layout.spacing = 20;
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlHeight = false;
+        layout.childControlWidth = false;
 
-        rewardManager.rewardUI = rewardUI;
+        rewardUI.cardsContainer = containerGO.transform;
 
-        // Create 3 reward buttons
-        for (int i = 0; i < 3; i++)
-        {
-            GameObject btnGO = new GameObject($"RewardButton_{i}");
-            btnGO.transform.SetParent(rewardPanelGO.transform, false);
-            Image btnImg = btnGO.AddComponent<Image>();
-            btnImg.color = Color.white;
-            Button btn = btnGO.AddComponent<Button>();
-            
-            RectTransform btnRect = btnGO.GetComponent<RectTransform>();
-            btnRect.anchorMin = new Vector2(0.5f, 0.5f);
-            btnRect.anchorMax = new Vector2(0.5f, 0.5f);
-            btnRect.sizeDelta = new Vector2(200, 60);
-            btnRect.anchoredPosition = new Vector2(0, 100 - (i * 80));
+        // Create Card Prefab (In-Scene for now, should ideally be a project asset)
+        GameObject cardPrefab = new GameObject("PerkCardPrefab");
+        cardPrefab.AddComponent<Image>().color = Color.gray;
+        RectTransform cardRect = cardPrefab.GetComponent<RectTransform>();
+        cardRect.sizeDelta = new Vector2(180, 250);
+        
+        PerkCardUI cardUI = cardPrefab.AddComponent<PerkCardUI>();
+        
+        // Name Text
+        GameObject nameGO = new GameObject("NameText");
+        nameGO.transform.SetParent(cardPrefab.transform, false);
+        TextMeshProUGUI nameText = nameGO.AddComponent<TextMeshProUGUI>();
+        nameText.text = "Perk Name";
+        nameText.alignment = TextAlignmentOptions.Center;
+        nameText.fontSize = 18;
+        nameGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 80);
+        cardUI.nameText = nameText;
 
-            GameObject textGO = new GameObject("Text");
-            textGO.transform.SetParent(btnGO.transform, false);
-            TextMeshProUGUI tmp = textGO.AddComponent<TextMeshProUGUI>();
-            tmp.text = "Reward";
-            tmp.fontSize = 20;
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.color = Color.black;
-            RectTransform textRect = textGO.GetComponent<RectTransform>();
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = Vector2.zero;
-            textRect.offsetMax = Vector2.zero;
+        // Desc Text
+        GameObject descGO = new GameObject("DescText");
+        descGO.transform.SetParent(cardPrefab.transform, false);
+        TextMeshProUGUI descText = descGO.AddComponent<TextMeshProUGUI>();
+        descText.text = "Description...";
+        descText.alignment = TextAlignmentOptions.Center;
+        descText.fontSize = 14;
+        descGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+        cardUI.descText = descText;
 
-            rewardUI.rewardButtons[i] = btn;
-            rewardUI.rewardTexts[i] = tmp;
-        }
+        // Select Button
+        GameObject btnGO = new GameObject("SelectButton");
+        btnGO.transform.SetParent(cardPrefab.transform, false);
+        btnGO.AddComponent<Image>().color = Color.green;
+        Button btn = btnGO.AddComponent<Button>();
+        btnGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -80);
+        btnGO.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 30);
+        cardUI.selectButton = btn;
+
+        // Save as prefab if possible, or just assign
+        rewardUI.cardPrefab = cardPrefab;
+        cardPrefab.SetActive(false); // Hide template
+        cardPrefab.transform.SetParent(rewardPanelGO.transform, false); // Keep it in hierarchy but hidden
 
         rewardPanelGO.SetActive(false);
         Debug.Log("✅ Created Reward System (RewardManager + RewardUI)");

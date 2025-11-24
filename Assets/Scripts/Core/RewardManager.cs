@@ -1,26 +1,14 @@
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
-
-public enum RewardType
-{
-    Gold,
-    Heal,
-    Dice
-}
-
-[System.Serializable]
-public struct RewardOption
-{
-    public RewardType type;
-    public string description;
-    public int value; // Amount of gold, heal amount, or dice ID (if we had IDs)
-    public Sprite icon;
-}
+using System.Collections.Generic;
 
 public class RewardManager : MonoBehaviour
 {
     public static RewardManager Instance;
+
+    [Header("Perk Database")]
+    public List<PerkData> allPerks; // Assign in Inspector or load from Resources
+
+    [Header("UI Reference")]
     public RewardUI rewardUI;
 
     void Awake()
@@ -31,76 +19,87 @@ public class RewardManager : MonoBehaviour
 
     public void GenerateRewards()
     {
-        List<RewardOption> options = new List<RewardOption>();
-
-        // Option 1: Gold
-        int goldAmount = Random.Range(10, 25);
-        options.Add(new RewardOption 
-        { 
-            type = RewardType.Gold, 
-            description = $"+{goldAmount} Gold", 
-            value = goldAmount 
-        });
-
-        // Option 2: Heal (if not full health) or more Gold
-        if (PlayerHealth.Instance != null && PlayerHealth.Instance.currentHealth < PlayerHealth.Instance.maxHealth)
+        if (allPerks == null || allPerks.Count == 0)
         {
-            int healAmount = 20;
-            options.Add(new RewardOption 
-            { 
-                type = RewardType.Heal, 
-                description = $"Heal {healAmount} HP", 
-                value = healAmount 
-            });
-        }
-        else
-        {
-            int bonusGold = Random.Range(15, 30);
-            options.Add(new RewardOption 
-            { 
-                type = RewardType.Gold, 
-                description = $"+{bonusGold} Gold (Bonus)", 
-                value = bonusGold 
-            });
+            Debug.LogWarning("RewardManager: No perks defined!");
+            GameManager.Instance.FinishCombatPhase();
+            return;
         }
 
-        // Option 3: Random Dice (Simulated by giving enough gold for a dice or a free dice token)
-        // For now, let's give a large gold sum representing a "Dice Fund" or just more gold
-        int diceFund = 50;
-        options.Add(new RewardOption 
-        { 
-            type = RewardType.Gold, 
-            description = "Big Gold Bag", 
-            value = diceFund 
-        });
+
+
+
+        List<PerkData> options = new List<PerkData>();
+        List<PerkData> pool = new List<PerkData>(allPerks);
+
+        // Pick 3 random perks with weighted rarity
+        for (int i = 0; i < 3; i++)
+        {
+            if (pool.Count == 0) break;
+            
+            PerkData selected = GetWeightedRandomPerk(pool);
+            if (selected != null)
+            {
+                options.Add(selected);
+                pool.Remove(selected); // Avoid duplicates
+            }
+        }
 
         if (rewardUI != null)
         {
             rewardUI.ShowRewards(options);
         }
+        else
+        {
+            Debug.LogError("RewardManager: RewardUI not assigned!");
+            GameManager.Instance.FinishCombatPhase();
+        }
     }
 
-    public void SelectReward(RewardOption option)
+    private PerkData GetWeightedRandomPerk(List<PerkData> pool)
     {
-        switch (option.type)
+        int totalWeight = 0;
+        foreach (var p in pool) totalWeight += GetWeight(p.rarity);
+
+        int randomValue = Random.Range(0, totalWeight);
+        int currentWeight = 0;
+
+        foreach (var p in pool)
         {
-            case RewardType.Gold:
-                PlayerCurrency.Instance.AddGold(option.value);
-                break;
-            case RewardType.Heal:
-                PlayerHealth.Instance.Heal(option.value);
-                break;
-            case RewardType.Dice:
-                // Logic to add a free dice would go here
-                break;
+            currentWeight += GetWeight(p.rarity);
+            if (randomValue < currentWeight)
+            {
+                return p;
+            }
+        }
+        return pool[0]; // Fallback
+    }
+
+    private int GetWeight(PerkRarity rarity)
+    {
+        return rarity switch
+        {
+            PerkRarity.Common => 60,
+            PerkRarity.Rare => 30,
+            PerkRarity.Epic => 9,
+            PerkRarity.Legendary => 1,
+            _ => 10
+        };
+    }
+
+    public void SelectReward(PerkData perk)
+    {
+        if (perk != null)
+        {
+            perk.Apply();
+            Debug.Log($"🏆 Reward Selected: {perk.perkName}");
         }
 
-        Debug.Log($"🎁 Selected Reward: {option.description}");
-        
-        // Close UI and Resume Game Flow
-        if (rewardUI != null) rewardUI.Hide();
-        
-        // Advance time or finish combat phase
+        if (rewardUI != null)
+        {
+            rewardUI.Hide();
+        }
+
         GameManager.Instance.FinishCombatPhase();
     }
 }

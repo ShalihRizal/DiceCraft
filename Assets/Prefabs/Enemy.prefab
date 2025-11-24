@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8367faae1263d5d48993739de0f8cdfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Enemy
-  health: 50
+  health: 500
   projectilePrefab: {fileID: 5652176904760904356, guid: 407519606bded124bb5b94f94cf27481, type: 3}
   fireInterval: 1
   projectileDamage: 10

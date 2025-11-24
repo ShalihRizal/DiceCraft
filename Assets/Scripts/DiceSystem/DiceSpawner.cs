@@ -116,6 +116,36 @@ public class DiceSpawner : MonoBehaviour
         return diceScript;
     }
 
+    public Dice SpawnDiceAt(DiceData data, Transform cell)
+    {
+        if (data == null || cell == null) return null;
+
+        if (occupiedCells.Contains(cell))
+        {
+            Debug.LogWarning("Cannot spawn dice: Cell is occupied!");
+            return null;
+        }
+
+        GameObject dice = Instantiate(data.prefab, cell.position, Quaternion.identity);
+        dice.transform.SetParent(cell);
+        occupiedCells.Add(cell);
+
+        DiceDrag drag = dice.GetComponent<DiceDrag>();
+        if (drag != null)
+        {
+            drag.SetOriginalPosition(cell.position);
+            drag.SetParentCell(cell);
+        }
+
+        Dice diceScript = dice.GetComponent<Dice>();
+        if (diceScript != null)
+        {
+            diceScript.diceData = data;
+        }
+
+        return diceScript;
+    }
+
     public void ReleaseCell(Transform cell)
     {
         occupiedCells.Remove(cell);

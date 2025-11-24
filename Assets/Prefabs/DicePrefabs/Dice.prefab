@@ -110,7 +110,10 @@ MonoBehaviour:
   floatingTextPrefab_Normal: {fileID: 3820411511813736659, guid: 1714cb4bbfb019b45b18ecd4a2cde100, type: 3}
   floatingTextPrefab_Crit: {fileID: 3820411511813736659, guid: b4b4a66e3c3b3d64c8aea6277ee914cf, type: 3}
   floatingTextPrefab_Multicast: {fileID: 3820411511813736659, guid: eb80ed70ac5aa8c44a431d6b88a1f203, type: 3}
-  diceData: {fileID: 0}
+  tooltipPrefab: {fileID: 0}
+  vfxPassive: {fileID: 0}
+  vfxHighlight: {fileID: 0}
+  _diceData: {fileID: 0}
   runtimeStats:
     baseData: {fileID: 0}
     fireInterval: 1
@@ -122,8 +125,6 @@ MonoBehaviour:
     luck: 0
     critChance: 0
     multicastChance: 0
-  tooltipPrefab: {fileID: 0}
-  passive: 0
 --- !u!114 &7898915953354054710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -136,6 +137,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a99158ce93421cf4e989062eaea95abe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 0}
+  originalScale: {x: 0, y: 0, z: 0}
   dropEffectPrefab: {fileID: 890092119561073895, guid: 6cfef0f87f5bea743b73dee734934e81, type: 3}
   mergeEffectPrefab: {fileID: 8129137485081867221, guid: 7aa5c665526af634b8d409ca6b3272cf, type: 3}
 --- !u!61 &4515467092998193759

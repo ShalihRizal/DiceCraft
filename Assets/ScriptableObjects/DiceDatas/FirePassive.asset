@@ -9,13 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48055739da211c340a7ed0d21304950d, type: 3}
+  m_Script: {fileID: 11500000, guid: cb01bda72c284ef41a0be86f7b408652, type: 3}
   m_Name: FirePassive
   m_EditorClassIdentifier: Assembly-CSharp::FirePassive
-  passiveName: New Passive
-  description: Describe what this passive does.
+  passiveName: Fire Passive
+  description: Deals more damage if > 2 enemies.
   icon: {fileID: 0}
   triggerEvents: 2
   duration: 0
   cooldown: 0
-  bonusDamage: 5
+  damageMultiplier: 1.5
+  enemyThreshold: 2

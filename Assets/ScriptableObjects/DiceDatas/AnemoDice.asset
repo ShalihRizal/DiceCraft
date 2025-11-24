@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 962024c87ef79754ea5e461155d2e44f, type: 3}
+  m_Name: AnemoDice
+  m_EditorClassIdentifier: Assembly-CSharp::DiceData
+  diceName: Anemo Dice
+  description: Buffs adjacent dice attack speed.
+  upgradeSprites:
+  - {fileID: 21300000, guid: 89213d789098d064e8ee43effab05f86, type: 3}
+  - {fileID: 21300000, guid: 92969fbaeeace304999b7fdc813c8ec6, type: 3}
+  - {fileID: 21300000, guid: bce40262ec5ba7240a2d924c1ba60bcc, type: 3}
+  - {fileID: 21300000, guid: 341b33fb93b41ba4e918d8ce1034bd96, type: 3}
+  - {fileID: 21300000, guid: c969e2aa7c731464d96638d7ab7d7fd2, type: 3}
+  - {fileID: 21300000, guid: 2b30714cbfb83b549a1910f2d2137891, type: 3}
+  - {fileID: 21300000, guid: 86a1587564314754cb989f52f43d33fc, type: 3}
+  - {fileID: 21300000, guid: 8b4c37e2f0787374e94a82fadb960f11, type: 3}
+  prefab: {fileID: 4223228544291816483, guid: 728903fb0cdc97d45a43400c42dd604b, type: 3}
+  rarity: 0
+  sides: 6
+  baseDamage: 10
+  baseFireInterval: 0.5
+  cost: 100
+  luck: 0
+  diceCritChance: 0
+  passive: {fileID: 11400000, guid: 2e268dc94914ece49936e2f619bfb4e1, type: 2}
+  maxUpgradeLevel: 3
+  canAttack: 0
+  vfxIdle: {fileID: 0}
+  vfxSpawn: {fileID: 0}
+  vfxDestroy: {fileID: 0}
+  vfxSold: {fileID: 0}
+  vfxBought: {fileID: 0}
+  vfxDrag: {fileID: 0}
+  vfxDrop: {fileID: 0}
+  vfxMerge: {fileID: 0}
+  vfxPassive: {fileID: 0}

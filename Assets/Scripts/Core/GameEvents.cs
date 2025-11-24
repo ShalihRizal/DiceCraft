@@ -41,6 +41,8 @@ public static class GameEvents
     // Methods to call
     public static void RaiseCombatStarted() => OnCombatStarted?.Invoke();
     public static void RaiseCombatEnded() => OnCombatEnded?.Invoke();
+    public static event Action OnPreparationPhaseStarted;
+    public static void RaisePreparationPhaseStarted() => OnPreparationPhaseStarted?.Invoke();
 
     public static void RaiseWaveStarted(int waveNumber, int totalEnemies) => OnWaveStarted?.Invoke(waveNumber, totalEnemies);
     public static void RaiseWaveProgressChanged(int enemiesKilled, int totalEnemies) => OnWaveProgressChanged?.Invoke(enemiesKilled, totalEnemies);

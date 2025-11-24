@@ -1,41 +1,54 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
+using System.Collections.Generic;
 
 public class RewardUI : MonoBehaviour
 {
     public GameObject panel;
-    public Button[] rewardButtons;
-    public TextMeshProUGUI[] rewardTexts;
-
-    private List<RewardOption> currentOptions;
+    public Transform cardsContainer;
+    public GameObject cardPrefab;
+    
+    [Header("Toggle Controls")]
+    public Button minimizeButton;
+    public Button openButton;
 
     void Start()
     {
-        Hide(); // Start hidden
+        // Initial state
+        if (panel != null) panel.SetActive(false);
+        if (openButton != null)
+        {
+            openButton.gameObject.SetActive(false);
+            openButton.onClick.AddListener(Maximize);
+        }
+        if (minimizeButton != null)
+        {
+            minimizeButton.onClick.AddListener(Minimize);
+        }
     }
 
-    public void ShowRewards(List<RewardOption> options)
+    public void ShowRewards(List<PerkData> perks)
     {
-        currentOptions = options;
-        panel.SetActive(true);
+        if (panel != null) panel.SetActive(true);
+        if (openButton != null) openButton.gameObject.SetActive(false);
+        
+        SetInteractionState(false);
 
-        for (int i = 0; i < rewardButtons.Length; i++)
+        // Clear old cards
+        foreach (Transform child in cardsContainer)
         {
-            if (i < options.Count)
+            Destroy(child.gameObject);
+        }
+
+        // Create new cards
+        foreach (var perk in perks)
+        {
+            GameObject cardObj = Instantiate(cardPrefab, cardsContainer);
+            cardObj.SetActive(true);
+            PerkCardUI cardUI = cardObj.GetComponent<PerkCardUI>();
+            if (cardUI != null)
             {
-                rewardButtons[i].gameObject.SetActive(true);
-                if (rewardTexts[i] != null)
-                    rewardTexts[i].text = options[i].description;
-                
-                int index = i; // Capture for lambda
-                rewardButtons[i].onClick.RemoveAllListeners();
-                rewardButtons[i].onClick.AddListener(() => OnRewardClicked(index));
-            }
-            else
-            {
-                rewardButtons[i].gameObject.SetActive(false);
+                cardUI.Setup(perk);
             }
         }
     }
@@ -43,13 +56,39 @@ public class RewardUI : MonoBehaviour
     public void Hide()
     {
         if (panel != null) panel.SetActive(false);
+        if (openButton != null) openButton.gameObject.SetActive(false);
+        SetInteractionState(true);
     }
 
-    void OnRewardClicked(int index)
+    void Minimize()
     {
-        if (RewardManager.Instance != null && index < currentOptions.Count)
+        if (panel != null) panel.SetActive(false);
+        if (openButton != null) openButton.gameObject.SetActive(true);
+        SetInteractionState(true);
+    }
+
+    void Maximize()
+    {
+        if (panel != null) panel.SetActive(true);
+        if (openButton != null) openButton.gameObject.SetActive(false);
+        SetInteractionState(false);
+    }
+
+    private void SetInteractionState(bool interactable)
+    {
+        if (GameManager.Instance != null)
         {
-            RewardManager.Instance.SelectReward(currentOptions[index]);
+            GameManager.Instance.IsRewardPhaseActive = !interactable;
+        }
+
+        // Toggle Inventory Interaction
+        if (InventoryManager.Instance != null && InventoryManager.Instance.inventoryUI != null)
+        {
+            CanvasGroup group = InventoryManager.Instance.inventoryUI.GetComponent<CanvasGroup>();
+            if (group == null) group = InventoryManager.Instance.inventoryUI.gameObject.AddComponent<CanvasGroup>();
+            
+            group.interactable = interactable;
+            group.blocksRaycasts = interactable;
         }
     }
 }

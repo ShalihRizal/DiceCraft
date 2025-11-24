@@ -11,28 +11,27 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 962024c87ef79754ea5e461155d2e44f, type: 3}
   m_Name: HealDice
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::DiceData
   diceName: Heal Dice
-  upgradeSprites:
-  - {fileID: 21300000, guid: 92969fbaeeace304999b7fdc813c8ec6, type: 3}
-  - {fileID: 21300000, guid: bce40262ec5ba7240a2d924c1ba60bcc, type: 3}
-  - {fileID: 21300000, guid: 341b33fb93b41ba4e918d8ce1034bd96, type: 3}
-  - {fileID: 21300000, guid: c969e2aa7c731464d96638d7ab7d7fd2, type: 3}
-  - {fileID: 21300000, guid: 2b30714cbfb83b549a1910f2d2137891, type: 3}
-  - {fileID: 21300000, guid: 86a1587564314754cb989f52f43d33fc, type: 3}
-  - {fileID: 21300000, guid: 8b4c37e2f0787374e94a82fadb960f11, type: 3}
-  prefab: {fileID: 4223228544291816483, guid: ed347cc227fa22f419cbdd2aabfc6a6a, type: 3}
-  rarity: 1
+  description: Heals the player.
+  upgradeSprites: []
+  prefab: {fileID: 4223228544291816483, guid: 728903fb0cdc97d45a43400c42dd604b, type: 3}
+  rarity: 0
   sides: 6
-  baseDamage: 5
-  baseFireInterval: 0.75
-  cost: 5
-  luck: 0.1
+  baseDamage: 0
+  baseFireInterval: 1
+  cost: 200
+  luck: 0
   diceCritChance: 0
   passive: {fileID: 11400000, guid: 2953b78b4a51b6247844dc2ebbaab863, type: 2}
   maxUpgradeLevel: 3
-  canAttack: 1
-  effectOnMerge: {fileID: 0}
-  effectOnDrop: {fileID: 0}
-  effectOnDestroy: {fileID: 0}
-  effectOnPassive: {fileID: 0}
+  canAttack: 0
+  vfxIdle: {fileID: 0}
+  vfxSpawn: {fileID: 0}
+  vfxDestroy: {fileID: 0}
+  vfxSold: {fileID: 0}
+  vfxBought: {fileID: 0}
+  vfxDrag: {fileID: 0}
+  vfxDrop: {fileID: 0}
+  vfxMerge: {fileID: 0}
+  vfxPassive: {fileID: 0}

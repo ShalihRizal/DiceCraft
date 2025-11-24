@@ -9,13 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ce44f56476415e54e82616079fe9b260, type: 3}
+  m_Script: {fileID: 11500000, guid: 11a4e31d1a187ca49a7b65b30e1371a9, type: 3}
   m_Name: HealPassive
   m_EditorClassIdentifier: Assembly-CSharp::HealPassive
-  passiveName: New Passive
-  description: Describe what this passive does.
+  passiveName: Heal Passive
+  description: Heals the player.
   icon: {fileID: 0}
   triggerEvents: 2
   duration: 0
   cooldown: 0
-  healAmount: 5
+  healAmount: 10

@@ -266,7 +266,12 @@ public class Dice : MonoBehaviour
                 continue;
             }
 
-            yield return new WaitForSeconds(Mathf.Max(0.001f, runtimeStats.fireInterval));
+            float fireRate = runtimeStats.fireInterval;
+            if (GameManager.Instance != null)
+            {
+                fireRate /= (1f + GameManager.Instance.globalFireRateMultiplier); // Higher multiplier = lower interval = faster fire
+            }
+            yield return new WaitForSeconds(Mathf.Max(0.001f, fireRate));
             
             // Double check before firing
             if (EnemySpawner.activeEnemies.Count > 0)
@@ -281,7 +286,13 @@ public class Dice : MonoBehaviour
         int rolledValue = Random.Range(1, runtimeStats.diceSides + 1);
         float amount = runtimeStats.baseDamage * rolledValue;
 
-        bool isCrit = Random.value < runtimeStats.critChance;
+        // Apply Global Damage Multiplier
+        if (GameManager.Instance != null)
+        {
+            amount *= (1f + GameManager.Instance.globalDamageMultiplier);
+        }
+
+        bool isCrit = Random.value < (runtimeStats.critChance + (GameManager.Instance != null ? GameManager.Instance.globalCritChance : 0f));
         if (isCrit) amount *= 2f;
 
         int multicastCount = 1;
@@ -301,6 +312,15 @@ public class Dice : MonoBehaviour
             foreach (var neighbor in GetNeighbors())
             {
                 neighbor.diceData?.passive?.OnNeighborFire(neighbor, this, ref finalDamage, ref skipProjectile);
+            }
+
+            // Trigger Global Passives
+            if (GameManager.Instance != null)
+            {
+                foreach (var gp in GameManager.Instance.globalPassives)
+                {
+                    gp.OnDiceFire(this, ref finalDamage, ref skipProjectile);
+                }
             }
 
             if (skipProjectile) continue;

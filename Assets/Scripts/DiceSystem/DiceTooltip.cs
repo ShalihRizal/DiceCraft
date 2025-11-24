@@ -10,20 +10,48 @@ public class DiceTooltip : MonoBehaviour
 
     public RectTransform rectTransform;
 
+    public TextMeshProUGUI passiveNameText;
+    public TextMeshProUGUI passiveDescText;
+
     public void SetInfo(Dice dice)
     {
         var data = dice.diceData;
         var runtime = dice.runtimeStats;
-
-        nameText.text = data.diceName;
-        fireRateText.text = $"Fire Rate: {(data.baseFireInterval):0.00}s";
-        damageText.text = $"Damage per side: {data.baseDamage}";
-        sidesText.text = $"Sides: {data.sides}";
+        SetInfo(data, runtime.upgradeLevel);
     }
 
-    void Update()
+    public void SetInfo(DiceData data, int level = 1)
     {
-        Vector3 screenPos = Camera.main.WorldToScreenPoint(transform.position);
-        rectTransform.position = screenPos + new Vector3(0, 50f); // offset above
+        if (data == null)
+        {
+            Debug.LogWarning("DiceTooltip: Data is null!");
+            return;
+        }
+
+        if (nameText != null) nameText.text = $"{data.diceName} (Lv. {level})";
+        if (fireRateText != null) fireRateText.text = $"Fire Rate: {(data.baseFireInterval):0.00}s";
+        if (damageText != null) damageText.text = $"Damage: {data.baseDamage}";
+        if (sidesText != null) sidesText.text = $"Sides: {data.sides}";
+
+        if (data.passive != null)
+        {
+            if (passiveNameText != null)
+            {
+                passiveNameText.text = data.passive.passiveName;
+                passiveNameText.gameObject.SetActive(true);
+            }
+            if (passiveDescText != null)
+            {
+                passiveDescText.text = data.passive.description;
+                passiveDescText.gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            if (passiveNameText != null) passiveNameText.gameObject.SetActive(false);
+            if (passiveDescText != null) passiveDescText.gameObject.SetActive(false);
+        }
     }
+
+
 }

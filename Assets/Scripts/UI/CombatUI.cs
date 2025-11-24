@@ -10,16 +10,17 @@ public class CombatUI : MonoBehaviour
         if (startCombatButton != null)
         {
             startCombatButton.onClick.AddListener(OnStartCombatClicked);
+            startCombatButton.gameObject.SetActive(true); // Ensure it's visible at start if not in combat
         }
 
         GameEvents.OnCombatStarted += OnCombatStarted;
-        GameEvents.OnCombatEnded += OnCombatEnded;
+        GameEvents.OnPreparationPhaseStarted += OnPreparationPhaseStarted;
     }
 
     void OnDestroy()
     {
         GameEvents.OnCombatStarted -= OnCombatStarted;
-        GameEvents.OnCombatEnded -= OnCombatEnded;
+        GameEvents.OnPreparationPhaseStarted -= OnPreparationPhaseStarted;
     }
 
     void OnStartCombatClicked()
@@ -36,7 +37,7 @@ public class CombatUI : MonoBehaviour
             startCombatButton.gameObject.SetActive(false);
     }
 
-    void OnCombatEnded()
+    void OnPreparationPhaseStarted()
     {
         if (startCombatButton != null)
             startCombatButton.gameObject.SetActive(true);

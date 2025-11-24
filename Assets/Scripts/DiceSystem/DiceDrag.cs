@@ -44,7 +44,7 @@ public class DiceDrag : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (GameManager.Instance.IsCombatActive) return;
+        if (GameManager.Instance.IsCombatActive || GameManager.Instance.IsRewardPhaseActive) return;
         offset = transform.position - GetMouseWorldPosition();
         isDragging = true;
         if (spriteRenderer != null) spriteRenderer.sortingOrder = 10;
@@ -107,34 +107,45 @@ public class DiceDrag : MonoBehaviour
 
         DiceSpawner spawner = FindFirstObjectByType<DiceSpawner>();
 
-        // Handle trash zone
-        if (isOverTrashZone)
+        // Handle dropping into Inventory or Trash
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
-            if (spawner != null && parentCell != null)
-                spawner.ReleaseCell(parentCell);
-
-            if (diceScript != null && diceScript.diceData != null)
+            // Raycast to find what UI element we are over
+            UnityEngine.EventSystems.PointerEventData pointerData = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current)
             {
-                int refund = diceScript.diceData.cost;
-                PlayerCurrency.Instance.AddGold(refund);
+                position = Input.mousePosition
+            };
+            List<UnityEngine.EventSystems.RaycastResult> results = new List<UnityEngine.EventSystems.RaycastResult>();
+            UnityEngine.EventSystems.EventSystem.current.RaycastAll(pointerData, results);
 
-                if (diceScript.floatingTextPrefab_Normal != null)
+            foreach (var result in results)
+            {
+                if (result.gameObject.GetComponent<TrashUI>() != null)
                 {
-                    GameObject text = Instantiate(diceScript.floatingTextPrefab_Normal, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-                    FloatingText floating = text.GetComponent<FloatingText>();
-                    if (floating != null)
-                    {
-                        floating.ShowGold(refund);
-                    }
+                    SellDice(spawner);
+                    return;
                 }
-
-                Debug.Log($"🪙 Sold {diceScript.diceData.diceName} for {refund} gold!");
-                diceScript.PlayVFX(VFXType.Sold);
             }
 
-            DOTween.Kill(transform);
-            Destroy(gameObject);
-            return;
+            // If not trash, assume Inventory
+            if (InventoryManager.Instance != null)
+            {
+                if (InventoryManager.Instance.AddDice(diceScript.diceData))
+                {
+                    if (spawner != null && parentCell != null)
+                        spawner.ReleaseCell(parentCell);
+                    
+                    // VFX?
+                    DOTween.Kill(transform);
+                    Destroy(gameObject);
+                    return;
+                }
+                else
+                {
+                    Debug.Log("Inventory Full!");
+                    // Bounce back?
+                }
+            }
         }
 
         float dragDistance = Vector3.Distance(originalPosition, transform.position);
@@ -269,4 +280,32 @@ public class DiceDrag : MonoBehaviour
 
     public void SetTrashZoneStatus(bool isInside) => isOverTrashZone = isInside;
     public void SetOriginalPosition(Vector3 pos) => originalPosition = pos;
+
+    private void SellDice(DiceSpawner spawner)
+    {
+        if (spawner != null && parentCell != null)
+            spawner.ReleaseCell(parentCell);
+
+        if (diceScript != null && diceScript.diceData != null)
+        {
+            int refund = diceScript.diceData.cost;
+            PlayerCurrency.Instance.AddGold(refund);
+
+            if (diceScript.floatingTextPrefab_Normal != null)
+            {
+                GameObject text = Instantiate(diceScript.floatingTextPrefab_Normal, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+                FloatingText floating = text.GetComponent<FloatingText>();
+                if (floating != null)
+                {
+                    floating.ShowGold(refund);
+                }
+            }
+
+            Debug.Log($"🪙 Sold {diceScript.diceData.diceName} for {refund} gold!");
+            diceScript.PlayVFX(VFXType.Sold);
+        }
+
+        DOTween.Kill(transform);
+        Destroy(gameObject);
+    }
 }

@@ -11,9 +11,11 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 962024c87ef79754ea5e461155d2e44f, type: 3}
   m_Name: FireDice
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::DiceData
   diceName: Fire Dice
+  description: Deals more damage if > 2 enemies.
   upgradeSprites:
+  - {fileID: 21300000, guid: 189067e2bc7eb984a92f7c0eef6dc60e, type: 3}
   - {fileID: 21300000, guid: 8b152ac30d60320498b36442a2ad520b, type: 3}
   - {fileID: 21300000, guid: fd5acf26746eae741b3b731f0df00598, type: 3}
   - {fileID: 21300000, guid: 67a248c8988add449bdbb56e2d439490, type: 3}
@@ -21,18 +23,23 @@ MonoBehaviour:
   - {fileID: 21300000, guid: cd70a892fd5be2946a0ff2dde0b9a6e0, type: 3}
   - {fileID: 21300000, guid: 446d324d71105754481d663fae84bc82, type: 3}
   - {fileID: 21300000, guid: 1b527b4fe801e374d88e75e173728287, type: 3}
-  prefab: {fileID: 4223228544291816483, guid: 97dbbdd740574174895b0935e34c9f7d, type: 3}
-  rarity: 1
+  prefab: {fileID: 4223228544291816483, guid: 728903fb0cdc97d45a43400c42dd604b, type: 3}
+  rarity: 0
   sides: 6
-  baseDamage: 2
-  baseFireInterval: 1
-  cost: 7
-  luck: 0.5
-  diceCritChance: 0.05
+  baseDamage: 15
+  baseFireInterval: 0.8
+  cost: 150
+  luck: 0
+  diceCritChance: 0
   passive: {fileID: 11400000, guid: cc2cb99db01fe774a8082b30176b219e, type: 2}
   maxUpgradeLevel: 3
   canAttack: 1
-  effectOnMerge: {fileID: 0}
-  effectOnDrop: {fileID: 0}
-  effectOnDestroy: {fileID: 0}
-  effectOnPassive: {fileID: 0}
+  vfxIdle: {fileID: 0}
+  vfxSpawn: {fileID: 0}
+  vfxDestroy: {fileID: 0}
+  vfxSold: {fileID: 0}
+  vfxBought: {fileID: 0}
+  vfxDrag: {fileID: 0}
+  vfxDrop: {fileID: 0}
+  vfxMerge: {fileID: 0}
+  vfxPassive: {fileID: 0}

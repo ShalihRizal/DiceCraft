@@ -5,6 +5,8 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public float health = 3f;
+    private float maxHealth;
+    private EnemyHealthUI healthUI;
 
     public GameObject projectilePrefab;
     public float fireInterval = 1f;
@@ -15,9 +17,26 @@ public class Enemy : MonoBehaviour
 
     private float timer;
 
+    void Start()
+    {
+        maxHealth = health;
+        healthUI = gameObject.AddComponent<EnemyHealthUI>();
+        healthUI.Setup(maxHealth);
+    }
+
     public void TakeDamage(float amount)
     {
         health -= amount;
+        Debug.Log($"Enemy Took Damage: {amount}. Current Health: {health}");
+        if (healthUI != null) 
+        {
+            healthUI.UpdateHealth(health);
+        }
+        else
+        {
+            Debug.LogWarning("Enemy: HealthUI is null!");
+        }
+
         if (health <= 0f)
         {
             Die();

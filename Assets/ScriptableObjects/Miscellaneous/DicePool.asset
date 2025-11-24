@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DicePool
   m_EditorClassIdentifier: 
   allDice:
-  - {fileID: 11400000, guid: 72f8e09a94da21749a2a1c5241024b83, type: 2}
-  - {fileID: 11400000, guid: f1b50671b93b0174aab8da257a671ee2, type: 2}
+  - {fileID: 11400000, guid: 573a468c84a57c84980d61e949b98ad5, type: 2}
+  - {fileID: 11400000, guid: fde1fb734105b9247b43ee83030b2618, type: 2}
   - {fileID: 11400000, guid: f8e4e79631965954ca41b10d87688578, type: 2}
-  - {fileID: 11400000, guid: 4cda30369906d11408c623b20b329202, type: 2}
+  - {fileID: 11400000, guid: 9f65b424e6afb234fb24b20e6a08bbbf, type: 2}

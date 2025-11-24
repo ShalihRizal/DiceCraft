@@ -4,6 +4,8 @@ using UnityEngine;
 public class DiceData : ScriptableObject
 {
     public string diceName;
+    [TextArea(2, 5)]
+    public string description;
     public Sprite[] upgradeSprites;
     public GameObject prefab;
     public DiceRarity rarity;
