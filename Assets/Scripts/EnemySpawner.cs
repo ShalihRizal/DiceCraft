@@ -4,63 +4,118 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public GameObject enemyPrefab;
-    public float spawnInterval = 3f;
-    public int maxEnemies = 10;
-    public int enemiesPerFight = 5;
+    public List<WaveConfig> waves = new List<WaveConfig>();
 
-    private int enemiesSpawned = 0;
-    private int enemiesDefeated = 0;
-    private bool isCombatActive = false;
+    public static HashSet<Enemy> activeEnemies = new HashSet<Enemy>();
+    private int currentWaveIndex = 0;
+    private int enemiesKilledThisWave = 0;
+    private int totalEnemiesThisWave = 0;
+    private bool isSpawning = false;
 
-    public static List<Enemy> activeEnemies = new List<Enemy>();
+    void Start()
+    {
+        GameEvents.OnCombatStarted += StartCombat;
+    }
+
+    void OnDestroy()
+    {
+        GameEvents.OnCombatStarted -= StartCombat;
+    }
 
     public void StartCombat()
     {
-        enemiesSpawned = 0;
-        enemiesDefeated = 0;
-        isCombatActive = true;
+        if (isSpawning)
+        {
+            Debug.LogWarning("⚠️ Combat already in progress, ignoring duplicate call");
+            return;
+        }
+
+        isSpawning = true;
+        currentWaveIndex = 0;
+        enemiesKilledThisWave = 0;
+        activeEnemies.Clear();
         StartCoroutine(SpawnRoutine());
     }
 
-    IEnumerator SpawnRoutine()
+    private IEnumerator SpawnRoutine()
     {
-        while (isCombatActive)
+        while (currentWaveIndex < waves.Count)
         {
-            yield return new WaitForSeconds(spawnInterval);
+            WaveConfig wave = waves[currentWaveIndex];
 
-            if (activeEnemies.Count < maxEnemies && enemiesSpawned < enemiesPerFight)
+            Debug.Log($"🌊 Spawning Wave {currentWaveIndex + 1}/{waves.Count}: {wave.count} enemies");
+
+            // Reset wave progress
+            enemiesKilledThisWave = 0;
+            totalEnemiesThisWave = wave.count;
+            
+            // Raise wave started event
+            GameEvents.RaiseWaveStarted(currentWaveIndex + 1, totalEnemiesThisWave);
+            GameEvents.RaiseWaveProgressChanged(0, totalEnemiesThisWave);
+
+            // Spawn ALL enemies immediately
+            for (int i = 0; i < wave.count; i++)
             {
-                Vector3 spawnPos = new Vector3(Random.Range(-4f, 4f), 3f, 0f);
-                GameObject enemyGO = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-                Enemy enemy = enemyGO.GetComponent<Enemy>();
-                activeEnemies.Add(enemy);
-                enemiesSpawned++;
+                SpawnEnemy(wave.enemyPrefab);
+            }
+
+            // Wait for all enemies to be defeated
+            yield return new WaitUntil(() => activeEnemies.Count == 0);
+
+            Debug.Log($"✅ Wave {currentWaveIndex + 1} cleared!");
+            currentWaveIndex++;
+
+            // Small delay between waves (1 second)
+            if (currentWaveIndex < waves.Count)
+            {
+                yield return new WaitForSeconds(1f);
             }
         }
+
+        // All waves complete
+        Debug.Log("✅ All waves cleared!");
+        isSpawning = false;
+        
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.EndCombat();
+        }
+    }
+
+    private void SpawnEnemy(GameObject enemyPrefab)
+    {
+        Vector3 spawnPos = new Vector3(Random.Range(-2.5f, 2.5f), 4f, 0f);
+        GameObject enemyGO = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+        Enemy enemy = enemyGO.GetComponent<Enemy>();
+        
+        if (enemy != null)
+        {
+            RegisterEnemy(enemy);
+        }
+    }
+
+    public static void RegisterEnemy(Enemy enemy)
+    {
+        activeEnemies.Add(enemy);
+    }
+
+    public static void UnregisterEnemy(Enemy enemy)
+    {
+        activeEnemies.Remove(enemy);
+    }
+
+    public void OnEnemyKilled()
+    {
+        enemiesKilledThisWave++;
+        Debug.Log($"Enemy killed! Progress: {enemiesKilledThisWave}/{totalEnemiesThisWave}");
+        GameEvents.RaiseWaveProgressChanged(enemiesKilledThisWave, totalEnemiesThisWave);
     }
 
     public static Enemy GetRandomEnemy()
     {
         if (activeEnemies.Count == 0) return null;
-        return activeEnemies[Random.Range(0, activeEnemies.Count)];
-    }
-
-    public void NotifyEnemyDefeated()
-    {
-        enemiesDefeated++;
-
-        if (enemiesDefeated >= enemiesPerFight && activeEnemies.Count == 0)
-        {
-            EndCombat();
-        }
-    }
-
-    void EndCombat()
-    {
-        if (!isCombatActive) return;
-        isCombatActive = false;
-        GameManager.Instance?.EndCombat();
-        Debug.Log("Combat ended. Show reward screen or transition.");
+        
+        List<Enemy> enemyList = new List<Enemy>(activeEnemies);
+        return enemyList[Random.Range(0, enemyList.Count)];
     }
 }

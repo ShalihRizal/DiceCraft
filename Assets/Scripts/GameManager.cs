@@ -5,7 +5,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
-    public bool IsCombatActive { get; private set; } = false;
+    public bool IsCombatActive { get; set; } = false;
 
     public int currentDay { get; private set; } = 1;
     public int currentHour { get; private set; } = 1;
@@ -14,41 +14,66 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         if (Instance == null) Instance = this;
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
+        else { Destroy(gameObject); return; }
 
-        // Subscribe to dice merge events
         GameEvents.OnDiceMerged += HandleDiceMerged;
-
-        GameEvents.OnOverHeal += HandleOverHeal;
     }
 
     void OnDestroy()
     {
         if (Instance == this)
-        {
             GameEvents.OnDiceMerged -= HandleDiceMerged;
-            GameEvents.OnOverHeal -= HandleOverHeal;
-        }
     }
 
     public void StartCombat()
     {
         IsCombatActive = true;
         GameEvents.RaiseCombatStarted();
-        FindObjectOfType<EnemySpawner>()?.StartCombat();
+        
+        // EnemySpawner listens to OnCombatStarted event, no need to call directly
     }
 
     public void EndCombat()
     {
-        GiveCombatRewards();
+        Debug.Log("Combat finished. Choosing rewards...");
         IsCombatActive = false;
         GameEvents.RaiseCombatEnded();
-        Debug.Log("Combat finished.");
+        
+        // Trigger Reward Phase
+        if (RewardManager.Instance != null)
+        {
+            RewardManager.Instance.GenerateRewards();
+        }
+        else
+        {
+            FinishCombatPhase();
+        }
+    }
+
+    public void FinishCombatPhase()
+    {
         AdvanceTime();
+        Debug.Log("Combat Phase Complete. Time Advanced.");
+    }
+
+    private void HandleDiceMerged(Dice owner, Dice mergedInto)
+    {
+        Debug.Log($"🧬 Dice merged: {owner.name} → {mergedInto.name}");
+
+        // Trigger passive for merged dice
+        mergedInto.diceData?.passive?.OnDiceMerged(owner, mergedInto);
+
+        // Visual Effect
+        if (mergedInto.diceData != null)
+            mergedInto.PlayEffect(mergedInto.diceData.effectOnMerge);
+
+        // Global logic: e.g., track merges, achievements, unlocks
+        TrackMerge(owner, mergedInto);
+    }
+    
+    private void TrackMerge(Dice owner, Dice mergedInto)
+    {
+        Debug.Log($"📊 Global merge tracker: {owner.name} merged into {mergedInto.name}");
     }
 
     void AdvanceTime()
@@ -60,20 +85,12 @@ public class GameManager : MonoBehaviour
             currentDay++;
         }
 
-
         GameEvents.OnTimeChanged?.Invoke(currentDay, currentHour);
-    }
-
-    void GiveCombatRewards()
-    {
-        int reward = UnityEngine.Random.Range(5, 11);
-        PlayerCurrency.Instance.AddGold(reward); // Adjusted to match latest
-        Debug.Log($"💰 Earned {reward} coins!");
     }
 
     public void Restart()
     {
-        Time.timeScale = 1f; // Reset time scale
+        Time.timeScale = 1f;
         currentDay = 1;
         currentHour = 1;
         IsCombatActive = false;
@@ -82,18 +99,10 @@ public class GameManager : MonoBehaviour
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
     }
 
-    void HandleDiceMerged(DiceData diceType)
+    public void GameOver()
     {
-        Debug.Log($"🧬 Dice merged: {diceType.diceName}");
-
-        // ⏳ Later you can: track total merges, unlock abilities, show achievements, etc.
+        IsCombatActive = false;
+        Time.timeScale = 0f;
+        GameEvents.RaiseGameOver();
     }
-    
-    void HandleOverHeal(float amount)
-{
-    Debug.Log($"✨ Overhealed by {amount} HP!");
-
-    // 🔮 Later: trigger passives, buffs, or even spawn shields
-}
-
 }

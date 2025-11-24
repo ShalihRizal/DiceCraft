@@ -4,10 +4,11 @@ using TMPro;
 using System.Collections;
 using DG.Tweening;
 
+
 public class PlayerHealth : MonoBehaviour
 {
     public float maxHealth = 100f;
-    private float currentHealth;
+    public float currentHealth;
 
     public Slider healthSlider;
     public TextMeshProUGUI percentageText;
@@ -19,7 +20,15 @@ public class PlayerHealth : MonoBehaviour
     public Slider shieldSlider;
 
     
+    public static PlayerHealth Instance;
+
     private float currentShield = 0f;
+
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
 
     void Start()
     {
@@ -136,7 +145,7 @@ public class PlayerHealth : MonoBehaviour
         GameEvents.RaisePlayerDied();
         Time.timeScale = 0.2f;
         yield return new WaitForSecondsRealtime(2f);
-        Time.timeScale = 0f;
+        GameManager.Instance.GameOver();
     }
     
     // Add inside the class:
@@ -146,7 +155,6 @@ IEnumerator RegenLoop()
         {
             yield return new WaitForSeconds(regenInterval);
             Regen(regenAmount);
-            Debug.Log("Regen: " + regenAmount + " health"); 
     }
 }
 

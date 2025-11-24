@@ -69,7 +69,7 @@ public class ShopManager : MonoBehaviour
 
         if (item.itemType == ShopItemType.Dice)
         {
-            var diceSpawner = FindObjectOfType<DiceSpawner>();
+            var diceSpawner = Object.FindFirstObjectByType<DiceSpawner>();
             if (diceSpawner != null && !diceSpawner.TrySpawnSpecificDice(item.diceData))
             {
                 Debug.Log("❌ Cannot buy dice: Board is full.");

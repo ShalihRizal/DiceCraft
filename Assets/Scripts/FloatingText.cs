@@ -40,25 +40,24 @@ public class FloatingText : MonoBehaviour
     }
 
     private void AnimateText(Color color)
-{
-    if (canvasGroup == null || text == null) return;
+    {
+        if (canvasGroup == null || text == null) return;
 
-    // Kill existing tweens to prevent ghost references
-    transform.DOKill();
-    text.transform.DOKill();
+        // Kill existing tweens to prevent ghost references
+        transform.DOKill();
+        text.transform.DOKill();
 
-    // Move upward
-    transform.DOMoveY(transform.position.y + floatDistance, duration).SetEase(Ease.OutQuad);
+        // Move upward
+        transform.DOMoveY(transform.position.y + floatDistance, duration).SetEase(Ease.OutQuad);
 
-    // Fade out
-    canvasGroup.DOFade(0f, duration).SetEase(Ease.InQuad);
+        // Fade out
+        canvasGroup.DOFade(0f, duration).SetEase(Ease.InQuad);
 
-    // Punch if crit/heal-crit
-    if (color == Color.red || color == Color.yellow)
-        text.transform.DOPunchScale(Vector3.one * 0.2f, 0.3f, 5, 0.5f);
+        // Punch if crit/heal-crit
+        if (color == Color.red || color == Color.yellow)
+            text.transform.DOPunchScale(Vector3.one * 0.2f, 0.3f, 5, 0.5f);
 
-    // Delay destruction to after tweens
-    Destroy(gameObject, duration + 0.05f);
-}
-
+        // Delay destruction to after tweens
+        Destroy(gameObject, duration + 0.05f);
+    }
 }

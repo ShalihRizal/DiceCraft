@@ -13,17 +13,26 @@ public class Projectile : MonoBehaviour
     void Update()
     {
         transform.Translate(direction * speed * Time.deltaTime);
-    }
-
-    void OnTriggerEnter2D(Collider2D collision)
-    {
-        PlayerHealth player = collision.GetComponent<PlayerHealth>();
-        if (player != null)
+        
+        // Simple bounds check to return to pool (disable) instead of destroy
+        if (Mathf.Abs(transform.position.y) > 10f || Mathf.Abs(transform.position.x) > 10f)
         {
-            if (!validToDamage) return; // 👈 Check if projectile should deal damage
-            player.TakeDamage(damage);
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!validToDamage) return;
+
+        if (other.CompareTag("Player"))
+        {
+            PlayerHealth player = other.GetComponent<PlayerHealth>();
+            if (player != null)
+            {
+                player.TakeDamage(damage);
+                gameObject.SetActive(false); // Return to pool
+            }
+        }
+    }
 }

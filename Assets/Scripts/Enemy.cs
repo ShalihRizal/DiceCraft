@@ -11,8 +11,7 @@ public class Enemy : MonoBehaviour
     public float projectileDamage = 1f;
 
     private bool isDead = false;
-    public bool IsDead => isDead; // optional public getter if needed elsewhere
-
+    public bool IsDead => isDead;
 
     private float timer;
 
@@ -25,22 +24,24 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void Die()
+    public void Die()
     {
+        Debug.Log($"💀 {gameObject.name} died!");
         isDead = true;
-
-        if (EnemySpawner.activeEnemies.Contains(this))
-            EnemySpawner.activeEnemies.Remove(this);
-
-        FindObjectOfType<EnemySpawner>()?.NotifyEnemyDefeated();
+        
+        // Notify spawner for wave progress
+        EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();
+        if (spawner != null)
+        {
+            spawner.OnEnemyKilled();
+        }
+        
+        EnemySpawner.UnregisterEnemy(this);
         Destroy(gameObject);
     }
 
-
     void Update()
     {
-        // Debug.Log("Enemy Update: " + gameObject.name);
-
         timer += Time.deltaTime;
 
         if (timer >= fireInterval)
@@ -52,21 +53,25 @@ public class Enemy : MonoBehaviour
 
     void ShootAtPlayer()
     {
-        if (isDead || projectilePrefab == null) return; // ✅ Prevent firing if dead
+        if (isDead || projectilePrefab == null) return;
 
-        GameObject projectile = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-
-        Projectile proj = projectile.GetComponent<Projectile>();
-        if (proj != null)
+        if (ObjectPooler.Instance == null)
         {
-            proj.damage = projectileDamage;
-            proj.direction = Vector3.down;
-            proj.validToDamage = true;
+            Debug.LogWarning("ObjectPooler instance is null! Cannot spawn projectile.");
+            return;
+        }
+
+        GameObject projectile = ObjectPooler.Instance.SpawnFromPool("EnemyProjectile", transform.position, Quaternion.identity);
+
+        if (projectile != null)
+        {
+            Projectile proj = projectile.GetComponent<Projectile>();
+            if (proj != null)
+            {
+                proj.damage = projectileDamage;
+                proj.direction = Vector3.down;
+                proj.validToDamage = true;
+            }
         }
     }
-
-
-
-
-
 }
