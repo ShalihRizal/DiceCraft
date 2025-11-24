@@ -114,7 +114,7 @@ MonoBehaviour:
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
-  m_ActiveFontFeatures: 00000000
+  m_ActiveFontFeatures: 6e72656b
   m_enableExtraPadding: 0
   checkPaddingRequired: 0
   m_isRichText: 1
@@ -148,8 +148,8 @@ GameObject:
   - component: {fileID: 9093585159983842944}
   - component: {fileID: 3118625220568830457}
   - component: {fileID: 176658265470133961}
-  - component: {fileID: 3459714863277929526}
   - component: {fileID: 7445280693814795477}
+  - component: {fileID: 8039935657938094858}
   m_Layer: 5
   m_Name: FloatingText_Normal
   m_TagString: Untagged
@@ -222,7 +222,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 1
+  m_PresetInfoIsWorld: 0
 --- !u!114 &176658265470133961
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,21 +240,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!114 &3459714863277929526
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3820411511813736659}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01ff299fcb32fe9488f1275018e194c3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  text: {fileID: 8692335534670491044}
-  floatDistance: 1
-  duration: 1
 --- !u!225 &7445280693814795477
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -267,3 +252,18 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &8039935657938094858
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3820411511813736659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ada645238584de641a38863dc174f321, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FloatingText
+  text: {fileID: 8692335534670491044}
+  floatDistance: 0.1
+  duration: 0.5

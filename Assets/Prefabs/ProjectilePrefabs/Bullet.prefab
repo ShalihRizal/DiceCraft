@@ -101,13 +101,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 3432990568824004642}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48ff0d03f7f12fa4fb84b50715308f8b, type: 3}
+  m_Script: {fileID: 11500000, guid: 96282340d02a14649a70e4958dffe4c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
   turnSpeed: 360
   damage: 1
-  hitEffectPrefab: {fileID: 3351849235051515275, guid: 3c9fd6278417d4f48a4120aa534d09d5, type: 3}
+  hitEffectPrefab: {fileID: 0}
 --- !u!58 &902653828305953488
 CircleCollider2D:
   m_ObjectHideFlags: 0

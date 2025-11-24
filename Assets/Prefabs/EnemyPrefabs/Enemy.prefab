@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 4894936455897059082}
   - component: {fileID: 3719044322364441916}
-  - component: {fileID: 8463787224629146346}
   - component: {fileID: 4912562603912589965}
   - component: {fileID: 5760857239643054666}
+  - component: {fileID: 1799626409836118220}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -93,22 +93,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8463787224629146346
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3217433932108092086}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57c966da9c825204c925a41984b8a562, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  health: 250
-  projectilePrefab: {fileID: 5652176904760904356, guid: fd5c90b1e244deb4faa2b598f3334753, type: 3}
-  fireInterval: 4
-  projectileDamage: 5
 --- !u!50 &4912562603912589965
 Rigidbody2D:
   serializedVersion: 5
@@ -186,3 +170,19 @@ PolygonCollider2D:
       - {x: -0.5, y: -0.28866667}
       - {x: 0.5, y: -0.28866667}
   m_UseDelaunayMesh: 0
+--- !u!114 &1799626409836118220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3217433932108092086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8367faae1263d5d48993739de0f8cdfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Enemy
+  health: 3
+  projectilePrefab: {fileID: 5652176904760904356, guid: fd5c90b1e244deb4faa2b598f3334753, type: 3}
+  fireInterval: 1
+  projectileDamage: 1
