@@ -105,8 +105,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e3570c93bda4e44d92ba6c8838a02cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  owner: 1
   speed: 5
   damage: 1
+  isHoming: 1
+  turnSpeed: 360
+  target: {fileID: 0}
+  hitEffectPrefab: {fileID: 0}
   direction: {x: 0, y: 1, z: 0}
   validToDamage: 1
 --- !u!58 &-1345977506311239594

@@ -106,7 +106,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ad9fbb019efa974483932524b2ee73a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  projectilePrefab: {fileID: 3432990568824004642, guid: e313947b006e55848b86840d94b952b3, type: 3}
+  projectilePrefab: {fileID: 5652176904760904356, guid: fd5c90b1e244deb4faa2b598f3334753, type: 3}
   floatingTextPrefab_Normal: {fileID: 3820411511813736659, guid: 1714cb4bbfb019b45b18ecd4a2cde100, type: 3}
   floatingTextPrefab_Crit: {fileID: 3820411511813736659, guid: b4b4a66e3c3b3d64c8aea6277ee914cf, type: 3}
   floatingTextPrefab_Multicast: {fileID: 3820411511813736659, guid: eb80ed70ac5aa8c44a431d6b88a1f203, type: 3}

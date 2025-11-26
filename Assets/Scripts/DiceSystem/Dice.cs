@@ -358,11 +358,31 @@ public class Dice : MonoBehaviour
             if (projectilePrefab == null) return;
 
             Vector3 spawnPos = transform.position;
-            GameObject proj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
+            GameObject projObj = Instantiate(projectilePrefab, spawnPos, Quaternion.identity);
 
-            Bullet b = proj.GetComponent<Bullet>();
-            if (b != null)
-                b.damage = finalDamage;
+            Projectile proj = projObj.GetComponent<Projectile>();
+            if (proj != null)
+            {
+                proj.owner = ProjectileOwner.Player;
+                proj.damage = finalDamage;
+                proj.isHoming = true; // Dice projectiles are homing
+                proj.target = EnemySpawner.GetRandomEnemy(); // Get target
+                proj.validToDamage = true;
+            }
+            else
+            {
+                // Fallback for old Bullet prefabs if they haven't been updated yet?
+                // Or maybe we should add Projectile component if missing?
+                // But Bullet.cs is being deleted.
+                // Let's assume user will update prefabs or we add it dynamically.
+                // For now, let's try to add it if missing, just in case.
+                proj = projObj.AddComponent<Projectile>();
+                proj.owner = ProjectileOwner.Player;
+                proj.damage = finalDamage;
+                proj.isHoming = true;
+                proj.target = EnemySpawner.GetRandomEnemy();
+                proj.validToDamage = true;
+            }
 
             SpawnFloatingText(finalDamage, isCrit, multicastCount > 1);
         }

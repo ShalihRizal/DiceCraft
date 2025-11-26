@@ -26,6 +26,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Awake()
     {
+        Debug.Log("PlayerHealth Awake called!");
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
@@ -34,6 +35,14 @@ public class PlayerHealth : MonoBehaviour
     {
         currentHealth = maxHealth;
         currentShield = 0f;
+        
+        if (shieldSlider != null)
+        {
+            shieldSlider.minValue = 0f;
+            shieldSlider.maxValue = 1f;
+            shieldSlider.value = 0f;
+        }
+
         UpdateUI();
         GameEvents.OnCombatStarted += ResetShield;
     }
@@ -119,7 +128,9 @@ public class PlayerHealth : MonoBehaviour
     void UpdateUI()
     {
         float healthRatio = currentHealth / maxHealth;
-        float shieldRatio = currentShield / maxHealth;
+        float shieldRatio = maxHealth > 0 ? currentShield / maxHealth : 0;
+
+        Debug.Log($"UpdateUI: Health: {currentHealth}/{maxHealth} ({healthRatio}), Shield: {currentShield} ({shieldRatio}), Slider Value: {shieldSlider?.value}");
 
         healthSlider?.DOValue(healthRatio, 0.3f).SetEase(Ease.OutQuad);
         shieldSlider?.DOValue(shieldRatio, 0.3f).SetEase(Ease.OutQuad);

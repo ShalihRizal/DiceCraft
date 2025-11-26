@@ -70,14 +70,15 @@ public class ObjectPooler : MonoBehaviour
             
             if (poolConfig != null)
             {
-                // Create 5 more objects
-                for (int i = 0; i < 5; i++)
+                // Create 5 more objects (or half the original size)
+                int expandSize = Mathf.Max(5, poolConfig.size / 2);
+                for (int i = 0; i < expandSize; i++)
                 {
                     GameObject obj = Instantiate(poolConfig.prefab);
                     obj.SetActive(false);
                     poolDictionary[tag].Enqueue(obj);
                 }
-                Debug.Log($"Expanded pool '{tag}' by 5 objects");
+                Debug.Log($"Expanded pool '{tag}' by {expandSize} objects");
             }
         }
 
@@ -117,5 +118,24 @@ public class ObjectPooler : MonoBehaviour
         poolDictionary[tag].Enqueue(objectToSpawn);
 
         return objectToSpawn;
+    }
+
+    public void CreatePool(string tag, GameObject prefab, int size)
+    {
+        if (poolDictionary.ContainsKey(tag)) return;
+
+        Pool newPool = new Pool { tag = tag, prefab = prefab, size = size };
+        pools.Add(newPool);
+
+        Queue<GameObject> objectPool = new Queue<GameObject>();
+        for (int i = 0; i < size; i++)
+        {
+            GameObject obj = Instantiate(prefab);
+            obj.SetActive(false);
+            objectPool.Enqueue(obj);
+        }
+
+        poolDictionary.Add(tag, objectPool);
+        Debug.Log($"Created new pool for '{tag}' with size {size}");
     }
 }

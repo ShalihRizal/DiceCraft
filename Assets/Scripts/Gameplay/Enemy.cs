@@ -22,6 +22,21 @@ public class Enemy : MonoBehaviour
         maxHealth = health;
         healthUI = gameObject.AddComponent<EnemyHealthUI>();
         healthUI.Setup(maxHealth);
+
+        if (ObjectPooler.Instance != null && projectilePrefab != null)
+        {
+            // Use the prefab name as the unique pool tag
+            string poolTag = projectilePrefab.name;
+            
+            if (!ObjectPooler.Instance.poolDictionary.ContainsKey(poolTag))
+            {
+                ObjectPooler.Instance.CreatePool(poolTag, projectilePrefab, 10);
+            }
+        }
+        else if (projectilePrefab == null)
+        {
+             Debug.LogError($"Enemy {gameObject.name}: Projectile Prefab is null!");
+        }
     }
 
     public void TakeDamage(float amount)
@@ -72,7 +87,11 @@ public class Enemy : MonoBehaviour
 
     void ShootAtPlayer()
     {
-        if (isDead || projectilePrefab == null) return;
+        if (isDead || projectilePrefab == null) 
+        {
+            if (projectilePrefab == null) Debug.LogWarning($"Enemy {gameObject.name}: Projectile Prefab is null!");
+            return;
+        }
 
         if (ObjectPooler.Instance == null)
         {
@@ -80,17 +99,39 @@ public class Enemy : MonoBehaviour
             return;
         }
 
-        GameObject projectile = ObjectPooler.Instance.SpawnFromPool("EnemyProjectile", transform.position, Quaternion.identity);
+        Debug.Log($"Enemy {gameObject.name} shooting at player.");
+        // Spawn slightly below the enemy to avoid immediate collision
+        Vector3 spawnPos = transform.position + Vector3.down * 1.0f; 
+        
+        // Use the prefab name as the tag
+        string poolTag = projectilePrefab.name;
+        GameObject projectile = ObjectPooler.Instance.SpawnFromPool(poolTag, spawnPos, Quaternion.identity);
 
         if (projectile != null)
         {
             Projectile proj = projectile.GetComponent<Projectile>();
+            if (proj == null)
+            {
+                Debug.LogWarning($"Spawned object {projectile.name} missing Projectile component. Adding it dynamically.");
+                proj = projectile.AddComponent<Projectile>();
+            }
+
             if (proj != null)
             {
+                proj.owner = ProjectileOwner.Enemy; // Set owner
                 proj.damage = projectileDamage;
                 proj.direction = Vector3.down;
                 proj.validToDamage = true;
+                Debug.Log($"Projectile spawned and configured. Damage: {proj.damage}");
             }
+            else
+            {
+                Debug.LogError("Failed to add Projectile component!");
+            }
+        }
+        else
+        {
+             Debug.LogError("Failed to spawn projectile from pool 'EnemyProjectile'.");
         }
     }
 }
