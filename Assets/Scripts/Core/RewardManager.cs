@@ -98,10 +98,7 @@ public class RewardManager : MonoBehaviour
                 // Show UI feedback
                 if (rewardUI != null)
                 {
-                    // Assuming RewardUI has a method to show warning, or we can add one.
-                    // For now, let's just NOT hide the UI so the user can fix the issue (e.g. sell dice).
-                    // But we need to tell them WHY.
-                    // Let's add a simple floating text or log.
+                    rewardUI.ShowWarning("Cannot apply perk! (Inventory Full?)");
                 }
                 return; // 🛑 Don't close UI, don't finish phase
             }

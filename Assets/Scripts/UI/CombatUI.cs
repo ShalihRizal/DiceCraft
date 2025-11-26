@@ -27,6 +27,11 @@ public class CombatUI : MonoBehaviour
     {
         if (GameManager.Instance != null && !GameManager.Instance.IsCombatActive)
         {
+            if (GameManager.Instance.IsMapActive)
+            {
+                Debug.LogWarning("Cannot start combat while Map is active! Select a node first.");
+                return;
+            }
             GameManager.Instance.StartCombat();
         }
     }

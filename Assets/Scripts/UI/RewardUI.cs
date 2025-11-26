@@ -12,10 +12,22 @@ public class RewardUI : MonoBehaviour
     public Button minimizeButton;
     public Button openButton;
 
+    private CanvasGroup canvasGroup;
+    private bool hasPendingRewards = false;
+    public bool HasPendingRewards => hasPendingRewards;
+
+    void Awake()
+    {
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null) canvasGroup = gameObject.AddComponent<CanvasGroup>();
+    }
+
     void Start()
     {
         // Initial state
-        if (panel != null) panel.SetActive(false);
+        if (panel != null) panel.SetActive(true); // Keep active for Update loop
+        Hide(); // Start hidden via CanvasGroup
+        
         if (openButton != null)
         {
             openButton.gameObject.SetActive(false);
@@ -27,8 +39,29 @@ public class RewardUI : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (hasPendingRewards)
+        {
+            if (Input.GetMouseButtonDown(1))
+            {
+                ToggleVisibility();
+            }
+        }
+    }
+
     public void ShowRewards(List<PerkData> perks)
     {
+        hasPendingRewards = true;
+        
+        // Show via CanvasGroup
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 1f;
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+        }
+        
         if (panel != null) panel.SetActive(true);
         if (openButton != null) openButton.gameObject.SetActive(false);
         
@@ -55,23 +88,52 @@ public class RewardUI : MonoBehaviour
 
     public void Hide()
     {
-        if (panel != null) panel.SetActive(false);
+        hasPendingRewards = false;
+        
+        // Hide via CanvasGroup
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+        }
+        
         if (openButton != null) openButton.gameObject.SetActive(false);
         SetInteractionState(true);
+    }
+
+    void ToggleVisibility()
+    {
+        if (canvasGroup == null) return;
+
+        if (canvasGroup.alpha > 0.5f)
+        {
+            // Hide temporarily
+            canvasGroup.alpha = 0f;
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+            SetInteractionState(true); // Allow board interaction
+        }
+        else
+        {
+            // Show
+            canvasGroup.alpha = 1f;
+            canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+            SetInteractionState(false); // Block board interaction
+        }
     }
 
     void Minimize()
     {
-        if (panel != null) panel.SetActive(false);
-        if (openButton != null) openButton.gameObject.SetActive(true);
-        SetInteractionState(true);
+        // Deprecated or can reuse ToggleVisibility logic
+        ToggleVisibility();
     }
 
     void Maximize()
     {
-        if (panel != null) panel.SetActive(true);
-        if (openButton != null) openButton.gameObject.SetActive(false);
-        SetInteractionState(false);
+        // Deprecated or can reuse ToggleVisibility logic
+        ToggleVisibility();
     }
 
     private void SetInteractionState(bool interactable)
@@ -90,5 +152,11 @@ public class RewardUI : MonoBehaviour
             group.interactable = interactable;
             group.blocksRaycasts = interactable;
         }
+    }
+
+    public void ShowWarning(string message)
+    {
+        Debug.LogWarning($"[UI Warning] {message}");
+        // TODO: Implement proper UI feedback
     }
 }

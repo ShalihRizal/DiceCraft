@@ -12,6 +12,11 @@ public class EnemySpawner : MonoBehaviour
     private int totalEnemiesThisWave = 0;
     private bool isSpawning = false;
 
+    void Awake()
+    {
+        activeEnemies.Clear();
+    }
+
     void Start()
     {
         GameEvents.OnCombatStarted += StartCombat;

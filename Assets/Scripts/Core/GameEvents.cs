@@ -58,4 +58,8 @@ public static class GameEvents
     public static void RaiseDiceMerged(Dice owner, Dice mergedInto) => OnDiceMerged?.Invoke(owner, mergedInto);
 
     public static void RaiseOverHeal(float amount) => OnOverHeal?.Invoke(amount);
+
+    // Map
+    public static event Action OnMapGenerated;
+    public static void RaiseMapGenerated() => OnMapGenerated?.Invoke();
 }

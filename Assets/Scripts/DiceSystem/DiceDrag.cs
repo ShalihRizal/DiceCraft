@@ -44,7 +44,7 @@ public class DiceDrag : MonoBehaviour
 
     void OnMouseDown()
     {
-        if (GameManager.Instance.IsCombatActive || GameManager.Instance.IsRewardPhaseActive) return;
+        if (GameManager.Instance.IsCombatActive || GameManager.Instance.IsRewardPhaseActive || GameManager.Instance.IsMapActive) return;
         offset = transform.position - GetMouseWorldPosition();
         isDragging = true;
         if (spriteRenderer != null) spriteRenderer.sortingOrder = 10;
@@ -101,6 +101,8 @@ public class DiceDrag : MonoBehaviour
 
     void OnMouseUp()
     {
+        if (!isDragging) return;
+
         ClearHighlight();
         isDragging = false;
         if (spriteRenderer != null) spriteRenderer.sortingOrder = originalSortingOrder;

@@ -30,18 +30,5 @@ public class RuntimeDiceData
         luck = data.luck / 100f;
         critChance = data.diceCritChance;
         multicastChance = Mathf.Clamp01(luck * 0.25f);
-        
-        RecalculateStats();
-    }
-
-    public void RecalculateStats()
-    {
-        if (baseData == null) return;
-
-        // Base Stats + (Growth * Level)
-        baseDamage = baseData.baseDamage + (baseData.growthDamage * upgradeLevel);
-        
-        // Fire Interval decreases with level (faster), clamped to 0.1s minimum
-        fireInterval = Mathf.Max(0.1f, baseData.baseFireInterval - (baseData.growthFireRate * upgradeLevel));
     }
 }

@@ -9,6 +9,7 @@ public class DiceSpawner : MonoBehaviour
 
     private List<Transform> gridCells = new List<Transform>();
     private HashSet<Transform> occupiedCells = new HashSet<Transform>();
+    public int OccupiedCellCount => occupiedCells.Count;
     public DicePool dicePool; // Reference to your ScriptableObject pool
 
     [Header("Starting Dice")]

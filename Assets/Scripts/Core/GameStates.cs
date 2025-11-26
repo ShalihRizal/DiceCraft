@@ -117,3 +117,34 @@ public class GameOverState : IState
         Time.timeScale = 1f;
     }
 }
+
+public class MapState : IState
+{
+    private GameManager _gameManager;
+
+    public MapState(GameManager gameManager)
+    {
+        _gameManager = gameManager;
+    }
+
+    public void Enter()
+    {
+        Debug.Log("Entering Map State");
+        _gameManager.IsCombatActive = false;
+        
+        // Show Map UI
+        Object.FindFirstObjectByType<MapUI>()?.Show();
+    }
+
+    public void Execute()
+    {
+        // Wait for player to select a node
+    }
+
+    public void Exit()
+    {
+        Debug.Log("Exiting Map State");
+        // Hide Map UI
+        Object.FindFirstObjectByType<MapUI>()?.Hide();
+    }
+}

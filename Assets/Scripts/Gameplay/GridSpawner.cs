@@ -9,6 +9,7 @@ public class GridSpawner : MonoBehaviour
     public int columns = 5;
     public float cellSize = 1f;
     public float spacing = 0.1f;
+    public Vector2 gridOffset = new Vector2(0.14f, -0.14f); // Default based on previous magic numbers
 
     [Header("Prefab")]
     public GameObject cellPrefab;
@@ -39,7 +40,8 @@ public class GridSpawner : MonoBehaviour
             {
                 float xPos = x * (cellSize + spacing);
                 float yPos = -y * (cellSize + spacing);
-                Vector2 spawnPosition = new Vector2(xPos, yPos) - originOffset + new Vector2(cellSize / 7f, -cellSize / 7f);
+                // Center the grid + manual offset
+                Vector2 spawnPosition = new Vector2(xPos, yPos) - originOffset + gridOffset;
 
                 GameObject newCell = Instantiate(cellPrefab, spawnPosition, Quaternion.identity, transform);
                 newCell.name = $"Cell_{x}_{y}";

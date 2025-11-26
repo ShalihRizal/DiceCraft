@@ -30,11 +30,9 @@ MonoBehaviour:
   cost: 180
   luck: 0
   diceCritChance: 0
-  growthDamage: 1
-  growthFireRate: 0.1
   passive: {fileID: 11400000, guid: 47b7dcc265de45f4bb314afce89b8cf2, type: 2}
   maxUpgradeLevel: 3
-  canAttack: 0
+  canAttack: 1
   vfxIdle: {fileID: 0}
   vfxSpawn: {fileID: 0}
   vfxDestroy: {fileID: 0}
