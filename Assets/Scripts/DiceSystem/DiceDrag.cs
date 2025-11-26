@@ -130,7 +130,7 @@ public class DiceDrag : MonoBehaviour
             // If not trash, assume Inventory
             if (InventoryManager.Instance != null)
             {
-                if (InventoryManager.Instance.AddDice(diceScript.diceData))
+                if (InventoryManager.Instance.AddDice(diceScript.runtimeStats))
                 {
                     if (spawner != null && parentCell != null)
                         spawner.ReleaseCell(parentCell);
@@ -208,6 +208,21 @@ public class DiceDrag : MonoBehaviour
                             Transform thisCell = this.parentCell;
 
                             Vector3 tempPos = otherDice.transform.position;
+                            Vector3 myOldPos = originalPosition; // The position I started dragging from
+                            Vector3 otherOldPos = otherDice.transform.position; // The position other dice was at
+
+                            // Actually, originalPosition is where I started.
+                            // But if I am swapping, I am at mouse pos.
+                            // I want to swap my START position with other dice's CURRENT position.
+                            
+                            // Wait, logic in DiceDrag:
+                            // otherDice.transform.position = originalPosition;
+                            // this.transform.position = tempPos;
+                            
+                            // So:
+                            // Me: originalPosition -> tempPos (other's pos)
+                            // Other: tempPos -> originalPosition
+                            
                             otherDice.transform.position = originalPosition;
                             this.transform.position = tempPos;
 
@@ -234,6 +249,10 @@ public class DiceDrag : MonoBehaviour
                             // Drop effect
                             diceScript.PlayVFX(VFXType.Drop);
 
+                            // 🔄 Notify Dice of Move
+                            diceScript.OnMove(myOldPos);
+                            otherDice.diceScript.OnMove(otherOldPos);
+
                             mergeOrSwapOccurred = true;
                             break;
                         }
@@ -252,6 +271,7 @@ public class DiceDrag : MonoBehaviour
                     spawner.ReleaseCell(parentCell);
                     spawner.OccupyCell(nearestCell);
 
+                    Vector3 oldPos = originalPosition;
                     transform.position = nearestCell.position;
                     SetOriginalPosition(nearestCell.position);
                     SetParentCell(nearestCell);
@@ -259,7 +279,11 @@ public class DiceDrag : MonoBehaviour
                     DOTween.Kill(transform);
                     transform.DOScale(originalScale, 0.15f).SetEase(Ease.OutBack);
 
-                    if (diceScript != null) diceScript.PlayVFX(VFXType.Drop);
+                    if (diceScript != null) 
+                    {
+                        diceScript.PlayVFX(VFXType.Drop);
+                        diceScript.OnMove(oldPos); // 🔄 Notify Move
+                    }
                     return;
                 }
             }

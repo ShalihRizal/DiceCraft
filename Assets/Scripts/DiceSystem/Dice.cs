@@ -67,7 +67,11 @@ public class Dice : MonoBehaviour
         // Apply default sprite
         if (diceData != null && diceData.upgradeSprites != null && diceData.upgradeSprites.Length > 0 && spriteRenderer != null)
         {
-            spriteRenderer.sprite = diceData.upgradeSprites[0];
+            int level = runtimeStats != null ? runtimeStats.upgradeLevel : 0;
+            if (level < diceData.upgradeSprites.Length)
+                spriteRenderer.sprite = diceData.upgradeSprites[level];
+            else
+                spriteRenderer.sprite = diceData.upgradeSprites[0];
         }
 
         // Notify neighbors of spawn
@@ -169,8 +173,13 @@ public class Dice : MonoBehaviour
 
     public List<Dice> GetNeighbors(float radius = 1.5f)
     {
+        return GetNeighbors(transform.position, radius);
+    }
+
+    public List<Dice> GetNeighbors(Vector3 center, float radius = 1.5f)
+    {
         List<Dice> neighbors = new List<Dice>();
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius);
         foreach (var hit in hits)
         {
             Dice d = hit.GetComponent<Dice>();
@@ -180,6 +189,29 @@ public class Dice : MonoBehaviour
             }
         }
         return neighbors;
+    }
+
+    public void OnMove(Vector3 oldPosition)
+    {
+        // 1. Handle Old Neighbors (Leaving)
+        foreach (var neighbor in GetNeighbors(oldPosition))
+        {
+            // Neighbor reacts to me leaving
+            neighbor.diceData?.passive?.OnNeighborRemoved(neighbor, this);
+            
+            // I react to neighbor leaving
+            diceData?.passive?.OnNeighborRemoved(this, neighbor);
+        }
+
+        // 2. Handle New Neighbors (Arriving)
+        foreach (var neighbor in GetNeighbors(transform.position))
+        {
+            // Neighbor reacts to me arriving
+            neighbor.diceData?.passive?.OnNeighborSpawn(neighbor, this);
+            
+            // I react to neighbor arriving
+            diceData?.passive?.OnNeighborSpawn(this, neighbor);
+        }
     }
 
     // =========================
@@ -251,8 +283,6 @@ public class Dice : MonoBehaviour
             StopCoroutine(fireRoutine);
             fireRoutine = null;
         }
-
-        diceData?.passive?.OnDiceRemoved(this);
     }
 
     IEnumerator FireLoop()

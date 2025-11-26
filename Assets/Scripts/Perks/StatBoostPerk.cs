@@ -7,7 +7,7 @@ public class StatBoostPerk : PerkData
     public float fireRateMultiplier = 0f; // Additive (e.g. -0.1 for 10% faster)
     public float critChanceAdd = 0f;
 
-    public override void Apply()
+    public override bool Apply()
     {
         if (GameManager.Instance != null)
         {
@@ -16,6 +16,8 @@ public class StatBoostPerk : PerkData
             GameManager.Instance.globalCritChance += critChanceAdd;
             
             Debug.Log($"💪 Perk Applied: Stats Boosted!");
+            return true;
         }
+        return false;
     }
 }

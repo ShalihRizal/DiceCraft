@@ -15,7 +15,6 @@ MonoBehaviour:
   diceName: Ice Dice
   description: Shields the player.
   upgradeSprites:
-  - {fileID: 21300000, guid: 547fcfb748c037f40b3772ea5d7a6c01, type: 3}
   - {fileID: 21300000, guid: 81f7ecc5b83329b499e839ed41913efa, type: 3}
   - {fileID: 21300000, guid: e061b35c39711a642ac30c7af280e727, type: 3}
   - {fileID: 21300000, guid: 6eed617cb1d7002499c194da439dba6e, type: 3}
@@ -31,6 +30,8 @@ MonoBehaviour:
   cost: 180
   luck: 0
   diceCritChance: 0
+  growthDamage: 1
+  growthFireRate: 0.1
   passive: {fileID: 11400000, guid: 47b7dcc265de45f4bb314afce89b8cf2, type: 2}
   maxUpgradeLevel: 3
   canAttack: 0

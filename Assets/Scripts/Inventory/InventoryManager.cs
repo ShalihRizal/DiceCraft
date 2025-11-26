@@ -6,7 +6,7 @@ public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance;
 
-    public List<DiceData> inventoryDice = new List<DiceData>();
+    public List<RuntimeDiceData> inventoryDice = new List<RuntimeDiceData>();
     public int maxSlots = 12;
 
     public InventoryUI inventoryUI;
@@ -25,7 +25,20 @@ public class InventoryManager : MonoBehaviour
             inventoryUI.UpdateUI();
     }
 
-    public bool AddDice(DiceData dice)
+    public bool AddDice(DiceData diceData)
+    {
+        if (inventoryDice.Count >= maxSlots)
+        {
+            Debug.Log("Inventory Full!");
+            return false;
+        }
+
+        inventoryDice.Add(new RuntimeDiceData(diceData));
+        inventoryUI.UpdateUI();
+        return true;
+    }
+
+    public bool AddDice(RuntimeDiceData dice)
     {
         if (inventoryDice.Count >= maxSlots)
         {
@@ -38,7 +51,7 @@ public class InventoryManager : MonoBehaviour
         return true;
     }
 
-    public void RemoveDice(DiceData dice)
+    public void RemoveDice(RuntimeDiceData dice)
     {
         if (inventoryDice.Contains(dice))
         {

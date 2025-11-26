@@ -15,7 +15,6 @@ MonoBehaviour:
   diceName: Fire Dice
   description: Deals more damage if > 2 enemies.
   upgradeSprites:
-  - {fileID: 21300000, guid: 189067e2bc7eb984a92f7c0eef6dc60e, type: 3}
   - {fileID: 21300000, guid: 8b152ac30d60320498b36442a2ad520b, type: 3}
   - {fileID: 21300000, guid: fd5acf26746eae741b3b731f0df00598, type: 3}
   - {fileID: 21300000, guid: 67a248c8988add449bdbb56e2d439490, type: 3}
@@ -31,6 +30,8 @@ MonoBehaviour:
   cost: 150
   luck: 0
   diceCritChance: 0
+  growthDamage: 1
+  growthFireRate: 0.1
   passive: {fileID: 11400000, guid: cc2cb99db01fe774a8082b30176b219e, type: 2}
   maxUpgradeLevel: 3
   canAttack: 1

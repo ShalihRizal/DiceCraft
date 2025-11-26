@@ -6,22 +6,15 @@ public class UpgradePerk : PerkData
 {
     public int amountToUpgrade = 1;
 
-    public override void Apply()
+    public override bool Apply()
     {
-        // Find all dice on board and inventory
+        // Find all dice on board
         List<Dice> boardDice = new List<Dice>(FindObjectsByType<Dice>(FindObjectsSortMode.None));
-        
-        // Inventory dice are just data, need to handle them differently if we want to upgrade them.
-        // Currently InventoryManager holds DiceData. DiceData is ScriptableObject (shared).
-        // If we upgrade DiceData, it upgrades ALL instances. That's bad.
-        // We need RuntimeDiceData for inventory too? 
-        // Or Inventory should hold a wrapper class?
-        // For now, let's only upgrade Board Dice (which have RuntimeDiceData).
         
         if (boardDice.Count == 0)
         {
             Debug.LogWarning("No dice to upgrade!");
-            return;
+            return true;
         }
 
         for (int i = 0; i < amountToUpgrade; i++)
@@ -42,5 +35,6 @@ public class UpgradePerk : PerkData
             }
             boardDice.Remove(randomDice);
         }
+        return true;
     }
 }

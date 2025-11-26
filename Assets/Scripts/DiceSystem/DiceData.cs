@@ -16,6 +16,10 @@ public class DiceData : ScriptableObject
     public float luck = 0f;
     public float diceCritChance = 0f;
 
+    [Header("Growth Stats")]
+    public float growthDamage = 1f;
+    public float growthFireRate = 0.1f; // Reduction in interval per level
+
     [Header("Passive Behavior")]
     public DicePassive passive; // 🎯 Reference to a ScriptableObject
 

@@ -5,20 +5,21 @@ public class DicePerk : PerkData
 {
     public DiceData diceToGive;
 
-    public override void Apply()
+    public override bool Apply()
     {
         if (InventoryManager.Instance != null && diceToGive != null)
         {
             if (InventoryManager.Instance.AddDice(diceToGive))
             {
                 Debug.Log($"🎁 Perk Applied: Added {diceToGive.diceName} to inventory.");
+                return true;
             }
             else
             {
-                Debug.LogWarning("🎁 Perk Failed: Inventory Full! (Should handle this case)");
-                // Fallback: Drop on ground? Or give gold?
-                PlayerCurrency.Instance.AddGold(diceToGive.cost);
+                Debug.LogWarning("🎁 Perk Failed: Inventory Full!");
+                return false;
             }
         }
+        return false;
     }
 }

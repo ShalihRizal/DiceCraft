@@ -15,7 +15,6 @@ MonoBehaviour:
   diceName: Electro Dice
   description: Attacks chain to another enemy.
   upgradeSprites:
-  - {fileID: 21300000, guid: 484f026ea7bfb6c46b5c371c7c0f0f72, type: 3}
   - {fileID: 21300000, guid: 8fa381d757d4b18479d126e278d0effe, type: 3}
   - {fileID: 21300000, guid: 8e44f1a67dde3e547874ebf52d317c47, type: 3}
   - {fileID: 21300000, guid: 31243b0eadfff3f43bffc76b3c7b22b5, type: 3}
@@ -31,6 +30,8 @@ MonoBehaviour:
   cost: 120
   luck: 0
   diceCritChance: 0
+  growthDamage: 1
+  growthFireRate: 0.1
   passive: {fileID: 11400000, guid: ff6d906baedb6b8498acc47d3336ea7e, type: 2}
   maxUpgradeLevel: 3
   canAttack: 1

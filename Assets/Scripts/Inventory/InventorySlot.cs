@@ -6,7 +6,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 {
     public int slotIndex;
     public Image icon;
-    public DiceData currentDice;
+    public RuntimeDiceData currentDice;
 
     private GameObject dragIcon;
     private Canvas canvas;
@@ -16,11 +16,21 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         canvas = GetComponentInParent<Canvas>();
     }
 
-    public void SetDice(DiceData dice)
+    private void OnDestroy()
+    {
+        if (dragIcon != null)
+        {
+            Destroy(dragIcon);
+        }
+    }
+
+    public void SetDice(RuntimeDiceData dice)
     {
         currentDice = dice;
-        if (dice.upgradeSprites.Length > 0)
-            icon.sprite = dice.upgradeSprites[0]; // Use level 1 sprite
+        if (dice.baseData.upgradeSprites.Length > dice.upgradeLevel)
+            icon.sprite = dice.baseData.upgradeSprites[dice.upgradeLevel];
+        else if (dice.baseData.upgradeSprites.Length > 0)
+            icon.sprite = dice.baseData.upgradeSprites[0]; // Fallback
         else
             icon.sprite = null;
         
@@ -38,7 +48,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         if (currentDice != null && dragIcon == null) // Don't show tooltip if dragging
         {
-            DiceTooltipManager.Instance.ShowTooltip(currentDice, transform.position);
+            DiceTooltipManager.Instance.ShowTooltip(currentDice.baseData, transform.position);
         }
     }
 
@@ -50,12 +60,36 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnDrop(PointerEventData eventData)
     {
-        // Handle dropping dice from board to inventory
+        // Handle dropping dice from board to inventory OR inventory to inventory
         GameObject droppedObj = eventData.pointerDrag;
         if (droppedObj == null) return;
 
+        // Case 1: Dropped from another Inventory Slot
+        InventorySlot sourceSlot = droppedObj.GetComponent<InventorySlot>();
+        if (sourceSlot != null && sourceSlot != this)
+        {
+            // Merge Logic
+            if (currentDice != null && sourceSlot.currentDice != null)
+            {
+                if (currentDice.baseData == sourceSlot.currentDice.baseData && 
+                    currentDice.upgradeLevel == sourceSlot.currentDice.upgradeLevel)
+                {
+                    // Upgrade THIS slot
+                    currentDice.upgradeLevel++;
+                    SetDice(currentDice); // Refresh UI
+                    
+                    // Remove source
+                    InventoryManager.Instance.RemoveDiceAt(sourceSlot.slotIndex);
+                    
+                    Debug.Log("✅ Merged inside Inventory!");
+                    return;
+                }
+            }
+            return;
+        }
+
+        // Case 2: Dropped from Board (DiceDrag)
         DiceDrag diceDrag = droppedObj.GetComponent<DiceDrag>();
-        
         if (diceDrag != null)
         {
             // Logic to move dice from board to inventory
@@ -185,7 +219,20 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                         if (!spawner.IsCellOccupied(targetCell))
                         {
                             // Spawn Dice (Existing Logic)
-                            spawner.SpawnDiceAt(currentDice, targetCell);
+                            // We need to spawn with SPECIFIC RuntimeDiceData
+                            // DiceSpawner.SpawnDiceAt takes DiceData and creates new RuntimeDiceData.
+                            // We need a method to spawn with existing RuntimeDiceData.
+                            // Or we spawn and then overwrite stats.
+                            
+                            Dice newDice = spawner.SpawnDiceAt(currentDice.baseData, targetCell);
+                            if (newDice != null)
+                            {
+                                newDice.runtimeStats = currentDice; // Transfer stats (level, etc.)
+                                // Update sprite
+                                if (newDice.diceData.upgradeSprites.Length > newDice.runtimeStats.upgradeLevel)
+                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[newDice.runtimeStats.upgradeLevel];
+                            }
+                            
                             InventoryManager.Instance.RemoveDiceAt(slotIndex);
                         }
                         else
@@ -194,8 +241,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                             Dice diceOnBoard = targetCell.GetComponentInChildren<Dice>();
                             if (diceOnBoard != null)
                             {
-                                // Check if mergeable: Same Data AND Level 0 (Inventory dice are lvl 0)
-                                if (diceOnBoard.diceData == currentDice && diceOnBoard.runtimeStats.upgradeLevel == 0)
+                                // Check if mergeable: Same Data AND Same Level
+                                if (diceOnBoard.diceData == currentDice.baseData && diceOnBoard.runtimeStats.upgradeLevel == currentDice.upgradeLevel)
                                 {
                                     // Perform Merge
                                     diceOnBoard.runtimeStats.upgradeLevel++;
@@ -239,14 +286,20 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     {
                          if (!spawner.IsCellOccupied(bestCell))
                         {
-                            spawner.SpawnDiceAt(currentDice, bestCell);
+                            Dice newDice = spawner.SpawnDiceAt(currentDice.baseData, bestCell);
+                            if (newDice != null)
+                            {
+                                newDice.runtimeStats = currentDice;
+                                if (newDice.diceData.upgradeSprites.Length > newDice.runtimeStats.upgradeLevel)
+                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[newDice.runtimeStats.upgradeLevel];
+                            }
                             InventoryManager.Instance.RemoveDiceAt(slotIndex);
                         }
                         else
                         {
                             // Duplicate Merge Logic (Refactor if possible, but inline is fine for now)
                             Dice diceOnBoard = bestCell.GetComponentInChildren<Dice>();
-                            if (diceOnBoard != null && diceOnBoard.diceData == currentDice && diceOnBoard.runtimeStats.upgradeLevel == 0)
+                            if (diceOnBoard != null && diceOnBoard.diceData == currentDice.baseData && diceOnBoard.runtimeStats.upgradeLevel == currentDice.upgradeLevel)
                             {
                                 diceOnBoard.runtimeStats.upgradeLevel++;
                                 if (diceOnBoard.diceData.upgradeSprites.Length > diceOnBoard.runtimeStats.upgradeLevel)

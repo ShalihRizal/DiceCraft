@@ -91,7 +91,21 @@ public class RewardManager : MonoBehaviour
     {
         if (perk != null)
         {
-            perk.Apply();
+            bool success = perk.Apply();
+            if (!success)
+            {
+                Debug.LogWarning("⚠️ Could not apply perk (e.g. Inventory Full).");
+                // Show UI feedback
+                if (rewardUI != null)
+                {
+                    // Assuming RewardUI has a method to show warning, or we can add one.
+                    // For now, let's just NOT hide the UI so the user can fix the issue (e.g. sell dice).
+                    // But we need to tell them WHY.
+                    // Let's add a simple floating text or log.
+                }
+                return; // 🛑 Don't close UI, don't finish phase
+            }
+            
             Debug.Log($"🏆 Reward Selected: {perk.perkName}");
         }
 

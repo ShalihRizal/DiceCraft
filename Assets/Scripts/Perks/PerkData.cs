@@ -10,5 +10,5 @@ public abstract class PerkData : ScriptableObject
     public Sprite icon;
     public PerkRarity rarity;
 
-    public abstract void Apply();
+    public abstract bool Apply();
 }
