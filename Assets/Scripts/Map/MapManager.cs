@@ -67,23 +67,33 @@ public class MapManager : MonoBehaviour
         currentLayerIndex = node.layerIndex;
         node.isCompleted = true;
 
-        // Lock all nodes in current layer
+        // Lock all nodes in current layer AND previous layers
+        // Actually, just lock everything except the new available ones?
+        // Or just lock the layer we came from.
+        // To be safe, let's lock the current layer.
         foreach(var n in currentMap[node.layerIndex])
         {
             n.isAvailable = false;
         }
-
-        // Unlock connected nodes in next layer
-        if (currentLayerIndex + 1 < currentMap.Count)
+        
+        // Also lock the previous layer if we moved forward
+        if (node.layerIndex > 0)
         {
-            List<MapNode> nextLayer = currentMap[currentLayerIndex + 1];
-            foreach (int nextNodeIndex in node.outgoingConnectionIndices)
+            foreach(var n in currentMap[node.layerIndex - 1])
             {
-                // Find the node in the next layer with this index
-                // Note: MapNode.nodeIndex is just its index in the list
-                if (nextNodeIndex < nextLayer.Count)
+                n.isAvailable = false;
+            }
+        }
+
+        // Unlock connected nodes in next layers
+        foreach (var connection in node.outgoingConnections)
+        {
+            if (connection.targetLayer < currentMap.Count)
+            {
+                var targetLayer = currentMap[connection.targetLayer];
+                if (connection.targetIndex < targetLayer.Count)
                 {
-                    MapNode nextNode = nextLayer[nextNodeIndex];
+                    MapNode nextNode = targetLayer[connection.targetIndex];
                     nextNode.isLocked = false;
                     nextNode.isAvailable = true;
                 }

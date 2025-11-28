@@ -8,18 +8,28 @@ public class MapConfig : ScriptableObject
     public int layers = 10;
     public int minNodesPerLayer = 3;
     public int maxNodesPerLayer = 5;
-    public float nodeSpacingX = 200f;
+    public float nodeSpacingX = 85f; // Tight hex nesting (approx 0.57 * Y)
     public float nodeSpacingY = 150f;
 
+    [Header("Node Visuals")]
+    public List<NodeTypeIcon> nodeIcons;
+
     [Header("Node Weights")]
-    public List<NodeTypeWeight> nodeWeights;
+    public List<NodeWeight> nodeWeights;
 
     [Header("Boss Settings")]
     public NodeType bossNodeType = NodeType.Boss;
 }
 
 [System.Serializable]
-public struct NodeTypeWeight
+public struct NodeTypeIcon
+{
+    public NodeType type;
+    public Sprite icon;
+}
+
+[System.Serializable]
+public struct NodeWeight
 {
     public NodeType type;
     public int weight;

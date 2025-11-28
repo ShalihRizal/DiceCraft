@@ -67,7 +67,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: eafbb23f81e528a4a985ccc0c3d0c9f8, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -150,3 +150,4 @@ MonoBehaviour:
   availableColor: {r: 1, g: 1, b: 1, a: 1}
   completedColor: {r: 0, g: 1, b: 0, a: 1}
   bossColor: {r: 1, g: 0, b: 0, a: 1}
+  highlightColor: {r: 1, g: 0.9, b: 0.2, a: 1}

@@ -17,10 +17,11 @@ public class MapNode
     public NodeType nodeType;
     public Vector2 position; // Grid position (Layer, Index) or UI position
     public int layerIndex;
-    public int nodeIndex;
+    public int nodeIndex; // Index in the layer list
+    public int rowIndex; // Grid row index (0 to maxRows)
     
-    public List<int> outgoingConnectionIndices = new List<int>();
-    public List<int> incomingConnectionIndices = new List<int>();
+    public List<NodeConnection> outgoingConnections = new List<NodeConnection>();
+    public List<NodeConnection> incomingConnections = new List<NodeConnection>();
 
     public bool isCompleted = false;
     public bool isLocked = true; // True if not reachable yet
@@ -31,5 +32,19 @@ public class MapNode
         nodeType = type;
         layerIndex = layer;
         nodeIndex = index;
+        rowIndex = index; // Default
+    }
+}
+
+[System.Serializable]
+public struct NodeConnection
+{
+    public int targetLayer;
+    public int targetIndex;
+
+    public NodeConnection(int layer, int index)
+    {
+        targetLayer = layer;
+        targetIndex = index;
     }
 }

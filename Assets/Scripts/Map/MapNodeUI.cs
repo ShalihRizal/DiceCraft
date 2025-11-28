@@ -3,12 +3,10 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class MapNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class MapNodeUI : MonoBehaviour, IPointerClickHandler
 {
-    public MapNode node;
-    public Button button;
-    public Image icon;
-    public Image border;
+    public Image hexImage; // The background hex
+    public Image typeIcon; // The icon on top
     
     [Header("Colors")]
     public Color lockedColor = Color.gray;
@@ -16,81 +14,76 @@ public class MapNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandle
     public Color completedColor = Color.green;
     public Color bossColor = Color.red;
     public Color highlightColor = Color.yellow;
+    public Color currentNodeColor = Color.cyan; // New color for current node
 
     private MapUI mapUI;
+    public MapNode node;
+
+    private void Awake()
+    {
+        // Auto-assign references if missing
+        if (hexImage == null) hexImage = GetComponent<Image>();
+        
+        if (typeIcon == null)
+        {
+            var iconObj = transform.Find("TypeIcon");
+            if (iconObj != null) typeIcon = iconObj.GetComponent<Image>();
+        }
+    }
 
     public void Setup(MapNode mapNode, MapUI ui)
     {
         node = mapNode;
         mapUI = ui;
-        button.onClick.RemoveAllListeners();
-        button.onClick.AddListener(OnClick);
-        
         UpdateVisuals();
+    }
+
+    public void SetIcon(Sprite sprite)
+    {
+        if (typeIcon != null)
+        {
+            typeIcon.sprite = sprite;
+            typeIcon.gameObject.SetActive(sprite != null);
+        }
     }
 
     public void UpdateVisuals()
     {
-        transform.localScale = Vector3.one; // Reset scale
+        if (node == null) return;
         
-        if (node.isCompleted)
-        {
-            icon.color = completedColor;
-            button.interactable = false;
-        }
-        else if (node.isAvailable && !node.isLocked)
-        {
-            icon.color = node.nodeType == NodeType.Boss ? bossColor : availableColor;
-            button.interactable = true;
-        }
-        else
-        {
-            icon.color = lockedColor;
-            button.interactable = false;
-        }
-    }
-
-    private void OnClick()
-    {
-        MapManager.Instance.SelectNode(node);
-    }
-
-    public void OnPointerEnter(PointerEventData eventData)
-    {
+        // Base color logic
+        Color color = node.isLocked ? lockedColor : availableColor;
+        
+        // Highlight available nodes (Next Steps)
         if (node.isAvailable && !node.isLocked && !node.isCompleted)
         {
-            mapUI.HighlightPath(node);
+            color = highlightColor;
+        }
+        
+        if (node.isCompleted) color = completedColor;
+        
+        // Current Node Highlight (Overrides Completed)
+        if (MapManager.Instance != null && MapManager.Instance.currentNode == node)
+        {
+            color = currentNodeColor;
+        }
+
+        if (node.nodeType == NodeType.Boss && !node.isCompleted && !node.isLocked) color = bossColor;
+        
+        if (hexImage != null) hexImage.color = color;
+        
+        // Icon color logic
+        if (typeIcon != null)
+        {
+            typeIcon.color = node.isLocked ? new Color(1,1,1,0.5f) : Color.white;
         }
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    public void OnPointerClick(PointerEventData eventData)
     {
-        mapUI.ResetHighlight();
-    }
-    
-    public void SetHighlight(bool active)
-    {
-        if (active)
+        if (node.isAvailable && !node.isLocked)
         {
-            transform.localScale = Vector3.one * 1.2f; // Scale up
-            icon.color = highlightColor;
-        }
-        else
-        {
-            transform.localScale = Vector3.one;
-            // Color reset is handled by UpdateVisuals or MapUI calling SetDimmed(false)
-        }
-    }
-    
-    public void SetDimmed(bool dimmed)
-    {
-        if (dimmed)
-        {
-            icon.color = new Color(icon.color.r, icon.color.g, icon.color.b, 0.3f);
-        }
-        else
-        {
-            UpdateVisuals(); // Restore original color
+            mapUI.OnNodeClicked(node);
         }
     }
 }

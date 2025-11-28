@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8588106fbb3512a40aaba1aa9af769a0, type: 3}
   m_Name: DefaultMapConfig
   m_EditorClassIdentifier: Assembly-CSharp::MapConfig
-  layers: 10
-  minNodesPerLayer: 3
-  maxNodesPerLayer: 5
-  nodeSpacingX: 200
-  nodeSpacingY: 150
+  layers: 20
+  minNodesPerLayer: 1
+  maxNodesPerLayer: 3
+  nodeSpacingX: 84
+  nodeSpacingY: 290
   nodeWeights: []
   bossNodeType: 5

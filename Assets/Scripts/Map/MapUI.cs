@@ -25,14 +25,39 @@ public class MapUI : MonoBehaviour
     private CanvasGroup canvasGroup;
     private bool isPeeking = false;
 
+    private float lastSpacingX;
+    private float lastSpacingY;
+
     private void Awake()
     {
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null) canvasGroup = gameObject.AddComponent<CanvasGroup>();
     }
 
+    private void Start()
+    {
+        // If map already exists (e.g. returning from scene), draw it immediately
+        if (MapManager.Instance != null && MapManager.Instance.currentMap != null && nodeUIs.Count == 0)
+        {
+            ValidateContainers();
+            DrawMap();
+        }
+    }
+
     private void Update()
     {
+        // Runtime Config Update Check
+        if (MapManager.Instance != null && MapManager.Instance.mapConfig != null)
+        {
+            var config = MapManager.Instance.mapConfig;
+            if (Mathf.Abs(config.nodeSpacingX - lastSpacingX) > 0.01f || Mathf.Abs(config.nodeSpacingY - lastSpacingY) > 0.01f)
+            {
+                lastSpacingX = config.nodeSpacingX;
+                lastSpacingY = config.nodeSpacingY;
+                RefreshGridPositions();
+            }
+        }
+
         if (GameManager.Instance.IsMapActive)
         {
             // Toggle with RMB
@@ -125,38 +150,18 @@ public class MapUI : MonoBehaviour
         lineImages.Clear();
     }
 
+
     private void DrawMap()
     {
         var map = MapManager.Instance.currentMap;
         if (map == null) return;
         
         lineImages.Clear();
+        
+        // Load Hex Sprite
+        Sprite hexSprite = Resources.Load<Sprite>("HexNode"); 
 
-        // 1. Draw Connections (First, so they are behind nodes)
-        if (linePrefab != null)
-        {
-            foreach (var layer in map)
-            {
-                foreach (var node in layer)
-                {
-                    foreach (int targetIndex in node.outgoingConnectionIndices)
-                    {
-                        if (node.layerIndex + 1 < map.Count)
-                        {
-                            var currentMap = MapManager.Instance.currentMap;
-                            var nextLayer = currentMap[node.layerIndex + 1];
-                            if (targetIndex < nextLayer.Count)
-                            {
-                                MapNode target = nextLayer[targetIndex];
-                                DrawLine(node, target);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // 2. Spawn Nodes (Second, so they are on top)
+        // 1. Spawn Nodes
         foreach (var layer in map)
         {
             foreach (var node in layer)
@@ -173,6 +178,10 @@ public class MapUI : MonoBehaviour
                         rect.anchorMax = new Vector2(0f, 0.5f);
                         rect.pivot = new Vector2(0.5f, 0.5f);
                         rect.localScale = Vector3.one;
+                        
+                        // Set size to match spacing (slightly smaller for padding)
+                        float size = MapManager.Instance.mapConfig.nodeSpacingY * 0.66f; 
+                        rect.sizeDelta = new Vector2(size, size);
                     }
                     
                     obj.transform.localPosition = node.position;
@@ -182,22 +191,96 @@ public class MapUI : MonoBehaviour
                     {
                         ui.Setup(node, this);
                         nodeUIs.Add(ui);
+                        
+                        // Set Hex Background
+                        if (hexSprite != null && ui.hexImage != null)
+                        {
+                             ui.hexImage.sprite = hexSprite;
+                        }
+                        
+                        // Set Type Icon
+                        Sprite iconSprite = null;
+                        if (MapManager.Instance.mapConfig.nodeIcons != null)
+                        {
+                            var iconData = MapManager.Instance.mapConfig.nodeIcons.Find(x => x.type == node.nodeType);
+                            iconSprite = iconData.icon;
+                        }
+                        ui.SetIcon(iconSprite);
                     }
                 }
             }
         }
+
+        // 2. Draw History Lines (Only for completed/visited nodes)
+        RedrawLines();
         
         // Scroll to bottom (start)
         if (scrollRect != null) scrollRect.verticalNormalizedPosition = 0f;
     }
 
-    private void DrawLine(MapNode startNode, MapNode endNode)
+    public void RedrawLines()
+    {
+        // Clear existing lines
+        foreach(var img in lineImages.Values)
+        {
+            if (img != null) Destroy(img.gameObject);
+        }
+        lineImages.Clear();
+
+        var map = MapManager.Instance.currentMap;
+        if (map == null) return;
+
+        // Draw lines for visited paths
+        // A path is visited if 'start' is completed and 'end' is available/completed/locked(but visited?)
+        // Actually, we only draw lines that the player HAS taken.
+        // So we need to know the path history.
+        // Or simpler: If a node is completed, draw lines to its children that are ALSO completed or are the Current Node.
+        
+        foreach (var layer in map)
+        {
+            foreach (var node in layer)
+            {
+                if (node.isCompleted)
+                {
+                    if (node.layerIndex + 1 < map.Count)
+                    {
+                        // Iterate through outgoing connections
+                        foreach (var connection in node.outgoingConnections)
+                        {
+                            if (connection.targetLayer < map.Count)
+                            {
+                                var targetLayer = map[connection.targetLayer];
+                                if (connection.targetIndex < targetLayer.Count)
+                                {
+                                    MapNode target = targetLayer[connection.targetIndex];
+                                    
+                                    // Draw line if target is the CURRENT node or is COMPLETED
+                                    if (target.isCompleted || target == MapManager.Instance.currentNode)
+                                    {
+                                        DrawLine(node, target, true);
+                                    }
+                                    else if (target.isAvailable && !target.isLocked)
+                                    {
+                                         DrawLine(node, target, false);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void DrawLine(MapNode startNode, MapNode endNode, bool isHistory)
     {
         Vector2 start = startNode.position;
         Vector2 end = endNode.position;
 
         // Instantiate into contentContainer
         GameObject lineObj = Instantiate(linePrefab, contentContainer);
+        lineObj.transform.SetAsFirstSibling(); // Send to back
+        
         RectTransform rect = lineObj.GetComponent<RectTransform>();
         
         // Force Anchor/Pivot to Middle Left
@@ -219,91 +302,25 @@ public class MapUI : MonoBehaviour
         Image img = lineObj.GetComponent<Image>();
         if (img != null)
         {
-            img.color = defaultLineColor;
+            img.color = isHistory ? pathHighlightColor : dimmedLineColor;
+            // If it's a future path (not history), maybe make it very subtle
+            if (!isHistory) img.color = new Color(1, 1, 1, 0.05f); 
+            
             lineImages[(startNode, endNode)] = img;
         }
     }
     
-    public void HighlightPath(MapNode startNode)
+    public void OnNodeClicked(MapNode node)
     {
-        // Find all reachable nodes
-        HashSet<MapNode> reachableNodes = new HashSet<MapNode>();
-        HashSet<(MapNode, MapNode)> reachableLines = new HashSet<(MapNode, MapNode)>();
-        
-        Queue<MapNode> queue = new Queue<MapNode>();
-        queue.Enqueue(startNode);
-        reachableNodes.Add(startNode);
-        
-        var map = MapManager.Instance.currentMap;
+        if (MapManager.Instance != null)
+        {
+            MapManager.Instance.SelectNode(node);
+        }
+    }
 
-        while (queue.Count > 0)
-        {
-            MapNode current = queue.Dequeue();
-            
-            if (current.layerIndex + 1 < map.Count)
-            {
-                var nextLayer = map[current.layerIndex + 1];
-                foreach (int targetIndex in current.outgoingConnectionIndices)
-                {
-                    if (targetIndex < nextLayer.Count)
-                    {
-                        MapNode target = nextLayer[targetIndex];
-                        
-                        // Add line
-                        reachableLines.Add((current, target));
-                        
-                        // Add node if not visited
-                        if (!reachableNodes.Contains(target))
-                        {
-                            reachableNodes.Add(target);
-                            queue.Enqueue(target);
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Apply Visuals
-        foreach (var ui in nodeUIs)
-        {
-            if (reachableNodes.Contains(ui.node))
-            {
-                ui.SetDimmed(false); // Reset color first
-                ui.SetHighlight(true); // Then apply highlight
-            }
-            else
-            {
-                ui.SetHighlight(false);
-                ui.SetDimmed(true);
-            }
-        }
-        
-        foreach (var kvp in lineImages)
-        {
-            if (reachableLines.Contains(kvp.Key))
-            {
-                kvp.Value.color = pathHighlightColor;
-            }
-            else
-            {
-                kvp.Value.color = dimmedLineColor;
-            }
-        }
-    }
-    
-    public void ResetHighlight()
-    {
-        foreach (var ui in nodeUIs)
-        {
-            ui.SetHighlight(false);
-            ui.SetDimmed(false);
-        }
-        
-        foreach (var img in lineImages.Values)
-        {
-            img.color = defaultLineColor;
-        }
-    }
+    // Highlight logic removed as per user request
+    public void HighlightPath(MapNode startNode) { }
+    public void ResetHighlight() { }
 
     public void Show()
     {
@@ -387,6 +404,54 @@ public class MapUI : MonoBehaviour
         else
         {
             gameObject.SetActive(false); // Fallback
+        }
+    }
+
+    private void RefreshGridPositions()
+    {
+        if (MapManager.Instance == null || MapManager.Instance.currentMap == null) return;
+        
+        // 1. Recalculate Data Positions
+        if (MapManager.Instance.mapGenerator != null)
+        {
+            MapManager.Instance.mapGenerator.RecalculatePositions(MapManager.Instance.currentMap);
+        }
+
+        // 2. Update UI Positions and Sizes
+        // User requested "gap of each node in the same column by half a node"
+        // If NodeHeight = H, Gap = 0.5H, Spacing = 1.5H.
+        // So H = Spacing / 1.5 = Spacing * 0.666f.
+        float size = MapManager.Instance.mapConfig.nodeSpacingY * 0.66f; 
+        
+        foreach (var ui in nodeUIs)
+        {
+            if (ui != null && ui.node != null)
+            {
+                ui.transform.localPosition = ui.node.position;
+                
+                RectTransform rect = ui.GetComponent<RectTransform>();
+                if (rect != null)
+                {
+                    rect.sizeDelta = new Vector2(size, size);
+                }
+            }
+        }
+        
+        // 3. Redraw Lines (since positions changed)
+        RedrawLines();
+        
+        // 4. Update Content Size
+        if (contentContainer != null)
+        {
+            RectTransform contentRect = contentContainer.GetComponent<RectTransform>();
+            if (contentRect != null)
+            {
+                 float width = (MapManager.Instance.currentMap.Count) * MapManager.Instance.mapConfig.nodeSpacingX + 200f;
+                 int maxNodes = 0;
+                 foreach(var layer in MapManager.Instance.currentMap) maxNodes = Mathf.Max(maxNodes, layer.Count);
+                 float height = maxNodes * MapManager.Instance.mapConfig.nodeSpacingY + 200f;
+                 contentRect.sizeDelta = new Vector2(width, height);
+            }
         }
     }
 }

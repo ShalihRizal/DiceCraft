@@ -151,16 +151,27 @@ public class MapSystemSetupTool : EditorWindow
                 }
                 
                 GameObject temp = new GameObject("MapNode");
-                temp.AddComponent<Image>();
+                Image mainImage = temp.AddComponent<Image>();
                 temp.AddComponent<Button>();
+                
+                // Child for Icon
+                GameObject iconObj = new GameObject("TypeIcon");
+                iconObj.transform.SetParent(temp.transform, false);
+                Image iconImage = iconObj.AddComponent<Image>();
+                RectTransform iconRect = iconObj.GetComponent<RectTransform>();
+                iconRect.anchorMin = new Vector2(0.2f, 0.2f);
+                iconRect.anchorMax = new Vector2(0.8f, 0.8f); // Padding
+                iconRect.offsetMin = Vector2.zero;
+                iconRect.offsetMax = Vector2.zero;
+                
                 MapNodeUI nodeUI = temp.AddComponent<MapNodeUI>();
-                nodeUI.button = temp.GetComponent<Button>();
-                nodeUI.icon = temp.GetComponent<Image>();
-                nodeUI.border = temp.GetComponent<Image>(); // Just use same image for now
+                // nodeUI.button = temp.GetComponent<Button>(); // Removed button field in rewrite
+                nodeUI.hexImage = mainImage;
+                nodeUI.typeIcon = iconImage;
                 
                 prefab = PrefabUtility.SaveAsPrefabAsset(temp, prefabPath);
                 DestroyImmediate(temp);
-                Debug.Log("Created Placeholder MapNode Prefab.");
+                Debug.Log("Created Placeholder MapNode Prefab with Icon Slot.");
             }
             mapUI.nodePrefab = prefab;
         }
