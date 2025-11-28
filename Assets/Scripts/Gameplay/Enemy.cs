@@ -58,10 +58,20 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    public int coinDropAmount = 10;
+
     public void Die()
     {
         Debug.Log($"💀 {gameObject.name} died!");
         isDead = true;
+        GameEvents.RaiseEnemyKilled();
+        
+        // Drop Coins
+        if (PlayerCurrency.Instance != null)
+        {
+            PlayerCurrency.Instance.AddGold(coinDropAmount);
+            Debug.Log($"💰 {gameObject.name} dropped {coinDropAmount} gold!");
+        }
         
         // Notify spawner for wave progress
         EnemySpawner spawner = FindFirstObjectByType<EnemySpawner>();

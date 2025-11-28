@@ -50,7 +50,10 @@ public class RewardUI : MonoBehaviour
         }
     }
 
-    public void ShowRewards(List<PerkData> perks)
+    public Button skipButton;
+    public Button rerollButton;
+
+    public void ShowRewards(List<RewardManager.RewardOption> options, int skipGold, int rerollCost)
     {
         hasPendingRewards = true;
         
@@ -74,15 +77,36 @@ public class RewardUI : MonoBehaviour
         }
 
         // Create new cards
-        foreach (var perk in perks)
+        foreach (var option in options)
         {
             GameObject cardObj = Instantiate(cardPrefab, cardsContainer);
             cardObj.SetActive(true);
             PerkCardUI cardUI = cardObj.GetComponent<PerkCardUI>();
             if (cardUI != null)
             {
-                cardUI.Setup(perk);
+                cardUI.Setup(option);
             }
+        }
+        
+        // Setup Buttons
+        if (skipButton != null)
+        {
+            skipButton.gameObject.SetActive(true);
+            skipButton.onClick.RemoveAllListeners();
+            skipButton.onClick.AddListener(() => RewardManager.Instance.SkipReward());
+            
+            var txt = skipButton.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (txt != null) txt.text = $"Skip (+{skipGold}g)";
+        }
+        
+        if (rerollButton != null)
+        {
+            rerollButton.gameObject.SetActive(true);
+            rerollButton.onClick.RemoveAllListeners();
+            rerollButton.onClick.AddListener(() => RewardManager.Instance.RerollRewards());
+            
+            var txt = rerollButton.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (txt != null) txt.text = $"Reroll (-{rerollCost}g)";
         }
     }
 

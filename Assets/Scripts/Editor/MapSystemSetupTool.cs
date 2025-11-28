@@ -18,6 +18,35 @@ public class MapSystemSetupTool : EditorWindow
         {
             SetupMapSystem();
         }
+        
+        if (GUILayout.Button("Apply Default Node Weights"))
+        {
+            ApplyDefaultWeights();
+        }
+    }
+
+    private void ApplyDefaultWeights()
+    {
+        MapManager mapManager = FindFirstObjectByType<MapManager>();
+        if (mapManager != null && mapManager.mapConfig != null)
+        {
+            var config = mapManager.mapConfig;
+            config.nodeWeights = new System.Collections.Generic.List<NodeWeight>
+            {
+                new NodeWeight { type = NodeType.Combat, weight = 50 },
+                new NodeWeight { type = NodeType.Elite, weight = 15 },
+                new NodeWeight { type = NodeType.Shop, weight = 10 },
+                new NodeWeight { type = NodeType.Campfire, weight = 15 },
+                new NodeWeight { type = NodeType.Event, weight = 10 }
+            };
+            EditorUtility.SetDirty(config);
+            AssetDatabase.SaveAssets();
+            Debug.Log("Applied Default Node Weights!");
+        }
+        else
+        {
+            Debug.LogError("MapManager or MapConfig not found!");
+        }
     }
 
     private void SetupMapSystem()
@@ -137,44 +166,67 @@ public class MapSystemSetupTool : EditorWindow
         }
         
         // 3. Create Prefabs (Placeholder)
-        if (mapUI.nodePrefab == null)
+        // 3. Create/Update Prefabs
+        string nodePrefabPath = "Assets/Prefabs/UI/MapNode.prefab";
+        GameObject existingNodePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(nodePrefabPath);
+        
+        if (existingNodePrefab == null)
         {
-            // Try to find existing prefab or create a simple one
-            string prefabPath = "Assets/Prefabs/UI/MapNode.prefab";
-            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
-            if (prefab == null)
-            {
-                if (!AssetDatabase.IsValidFolder("Assets/Prefabs/UI"))
-                {
-                    if (!AssetDatabase.IsValidFolder("Assets/Prefabs")) AssetDatabase.CreateFolder("Assets", "Prefabs");
-                    AssetDatabase.CreateFolder("Assets/Prefabs", "UI");
-                }
-                
-                GameObject temp = new GameObject("MapNode");
-                Image mainImage = temp.AddComponent<Image>();
-                temp.AddComponent<Button>();
-                
-                // Child for Icon
-                GameObject iconObj = new GameObject("TypeIcon");
-                iconObj.transform.SetParent(temp.transform, false);
-                Image iconImage = iconObj.AddComponent<Image>();
-                RectTransform iconRect = iconObj.GetComponent<RectTransform>();
-                iconRect.anchorMin = new Vector2(0.2f, 0.2f);
-                iconRect.anchorMax = new Vector2(0.8f, 0.8f); // Padding
-                iconRect.offsetMin = Vector2.zero;
-                iconRect.offsetMax = Vector2.zero;
-                
-                MapNodeUI nodeUI = temp.AddComponent<MapNodeUI>();
-                // nodeUI.button = temp.GetComponent<Button>(); // Removed button field in rewrite
-                nodeUI.hexImage = mainImage;
-                nodeUI.typeIcon = iconImage;
-                
-                prefab = PrefabUtility.SaveAsPrefabAsset(temp, prefabPath);
-                DestroyImmediate(temp);
-                Debug.Log("Created Placeholder MapNode Prefab with Icon Slot.");
-            }
-            mapUI.nodePrefab = prefab;
+             // Create new if doesn't exist
+             if (!AssetDatabase.IsValidFolder("Assets/Prefabs/UI"))
+             {
+                 if (!AssetDatabase.IsValidFolder("Assets/Prefabs")) AssetDatabase.CreateFolder("Assets", "Prefabs");
+                 AssetDatabase.CreateFolder("Assets/Prefabs", "UI");
+             }
+             
+             GameObject temp = new GameObject("MapNode");
+             Image mainImage = temp.AddComponent<Image>();
+             // temp.AddComponent<Button>(); // Optional, using PointerClick now
+             
+             // Child for Icon
+             GameObject iconObj = new GameObject("TypeIcon");
+             iconObj.transform.SetParent(temp.transform, false);
+             Image iconImage = iconObj.AddComponent<Image>();
+             RectTransform iconRect = iconObj.GetComponent<RectTransform>();
+             iconRect.anchorMin = new Vector2(0.2f, 0.2f);
+             iconRect.anchorMax = new Vector2(0.8f, 0.8f);
+             iconRect.offsetMin = Vector2.zero;
+             iconRect.offsetMax = Vector2.zero;
+             
+             MapNodeUI nodeUI = temp.AddComponent<MapNodeUI>();
+             nodeUI.hexImage = mainImage;
+             nodeUI.typeIcon = iconImage;
+             
+             existingNodePrefab = PrefabUtility.SaveAsPrefabAsset(temp, nodePrefabPath);
+             DestroyImmediate(temp);
+             Debug.Log("Created MapNode Prefab.");
         }
+        else
+        {
+            // Fix existing prefab
+            using (var scope = new PrefabUtility.EditPrefabContentsScope(nodePrefabPath))
+            {
+                GameObject prefabRoot = scope.prefabContentsRoot;
+                Transform iconTrans = prefabRoot.transform.Find("TypeIcon");
+                if (iconTrans == null)
+                {
+                    GameObject iconObj = new GameObject("TypeIcon");
+                    iconObj.transform.SetParent(prefabRoot.transform, false);
+                    Image iconImage = iconObj.AddComponent<Image>();
+                    RectTransform iconRect = iconObj.GetComponent<RectTransform>();
+                    iconRect.anchorMin = new Vector2(0.2f, 0.2f);
+                    iconRect.anchorMax = new Vector2(0.8f, 0.8f);
+                    iconRect.offsetMin = Vector2.zero;
+                    iconRect.offsetMax = Vector2.zero;
+                    
+                    MapNodeUI ui = prefabRoot.GetComponent<MapNodeUI>();
+                    if (ui != null) ui.typeIcon = iconImage;
+                    
+                    Debug.Log("Fixed existing MapNode prefab: Added TypeIcon.");
+                }
+            }
+        }
+        mapUI.nodePrefab = existingNodePrefab;
 
         if (mapUI.linePrefab == null)
         {

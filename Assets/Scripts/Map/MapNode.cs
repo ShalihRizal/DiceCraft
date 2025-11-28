@@ -8,7 +8,8 @@ public enum NodeType
     Shop,
     Campfire,
     Event,
-    Boss
+    Boss,
+    Reward
 }
 
 [System.Serializable]

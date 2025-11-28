@@ -5,112 +5,199 @@ public class RewardManager : MonoBehaviour
 {
     public static RewardManager Instance;
 
-    [Header("Perk Database")]
-    public List<PerkData> allPerks; // Assign in Inspector or load from Resources
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        
+        if (rewardUI == null)
+        {
+            rewardUI = FindFirstObjectByType<RewardUI>(FindObjectsInactive.Include);
+        }
+
+        // Auto-find DicePool
+        if (dicePool == null)
+        {
+            var spawner = FindFirstObjectByType<DiceSpawner>();
+            if (spawner != null) dicePool = spawner.dicePool;
+        }
+
+        // Auto-load Perks if empty
+        if (allPerks == null || allPerks.Count == 0)
+        {
+            allPerks = new List<PerkData>(Resources.LoadAll<PerkData>(""));
+        }
+    }
+
+    public enum RewardType
+    {
+        Dice,
+        Relic,
+        Skill
+    }
+
+    public class RewardOption
+    {
+        public RewardType type;
+        public DiceData dice;
+        public RelicData relic;
+        public PerkData perk;
+        public string description;
+        public Sprite icon;
+    }
+
+    [Header("Databases")]
+    public DicePool dicePool;
+    public List<PerkData> allPerks;
+    // public List<RelicData> allRelics; // Access via RelicManager or assign here
 
     [Header("UI Reference")]
     public RewardUI rewardUI;
 
-    void Awake()
+    [Header("Settings")]
+    public int skipGoldReward = 25;
+    public int rerollCost = 50;
+
+    private RewardType currentRewardType;
+
+    public void GenerateRewards(RewardType type)
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
-    }
+        currentRewardType = type;
+        List<RewardOption> options = new List<RewardOption>();
 
-    public void GenerateRewards()
-    {
-        if (allPerks == null || allPerks.Count == 0)
-        {
-            Debug.LogWarning("RewardManager: No perks defined!");
-            GameManager.Instance.FinishCombatPhase();
-            return;
-        }
-
-
-
-
-        List<PerkData> options = new List<PerkData>();
-        List<PerkData> pool = new List<PerkData>(allPerks);
-
-        // Pick 3 random perks with weighted rarity
         for (int i = 0; i < 3; i++)
         {
-            if (pool.Count == 0) break;
-            
-            PerkData selected = GetWeightedRandomPerk(pool);
-            if (selected != null)
+            RewardOption option = new RewardOption();
+            option.type = type;
+            bool isValid = false;
+
+            if (type == RewardType.Dice)
             {
-                options.Add(selected);
-                pool.Remove(selected); // Avoid duplicates
-            }
-        }
-
-        if (rewardUI != null)
-        {
-            rewardUI.ShowRewards(options);
-        }
-        else
-        {
-            Debug.LogError("RewardManager: RewardUI not assigned!");
-            GameManager.Instance.FinishCombatPhase();
-        }
-    }
-
-    private PerkData GetWeightedRandomPerk(List<PerkData> pool)
-    {
-        int totalWeight = 0;
-        foreach (var p in pool) totalWeight += GetWeight(p.rarity);
-
-        int randomValue = Random.Range(0, totalWeight);
-        int currentWeight = 0;
-
-        foreach (var p in pool)
-        {
-            currentWeight += GetWeight(p.rarity);
-            if (randomValue < currentWeight)
-            {
-                return p;
-            }
-        }
-        return pool[0]; // Fallback
-    }
-
-    private int GetWeight(PerkRarity rarity)
-    {
-        return rarity switch
-        {
-            PerkRarity.Common => 60,
-            PerkRarity.Rare => 30,
-            PerkRarity.Epic => 9,
-            PerkRarity.Legendary => 1,
-            _ => 10
-        };
-    }
-
-    public void SelectReward(PerkData perk)
-    {
-        if (perk != null)
-        {
-            bool success = perk.Apply();
-            if (!success)
-            {
-                Debug.LogWarning("⚠️ Could not apply perk (e.g. Inventory Full).");
-                // Show UI feedback
-                if (rewardUI != null)
+                if (dicePool != null)
                 {
-                    rewardUI.ShowWarning("Cannot apply perk! (Inventory Full?)");
+                    option.dice = dicePool.GetRandomDice();
+                    if (option.dice != null)
+                    {
+                        option.description = option.dice.diceName;
+                        // option.icon = option.dice.icon;
+                        isValid = true;
+                    }
                 }
-                return; // 🛑 Don't close UI, don't finish phase
+            }
+            else if (type == RewardType.Relic)
+            {
+                if (ShopManager.Instance != null && ShopManager.Instance.relicPool != null && ShopManager.Instance.relicPool.Count > 0)
+                {
+                    var pool = ShopManager.Instance.relicPool;
+                    option.relic = pool[Random.Range(0, pool.Count)];
+                    if (option.relic != null)
+                    {
+                        option.description = option.relic.relicName;
+                        option.icon = option.relic.icon;
+                        isValid = true;
+                    }
+                }
+            }
+            else if (type == RewardType.Skill)
+            {
+                if (allPerks != null && allPerks.Count > 0)
+                {
+                    option.perk = allPerks[Random.Range(0, allPerks.Count)];
+                    if (option.perk != null)
+                    {
+                        option.description = option.perk.perkName;
+                        option.icon = option.perk.icon;
+                        isValid = true;
+                    }
+                }
             }
             
-            Debug.Log($"🏆 Reward Selected: {perk.perkName}");
+            if (isValid)
+            {
+                options.Add(option);
+            }
         }
 
         if (rewardUI != null)
         {
-            rewardUI.Hide();
+            rewardUI.ShowRewards(options, skipGoldReward, rerollCost);
+        }
+    }
+
+    public void SelectReward(RewardOption option)
+    {
+        Debug.Log($"SelectReward called. Type: {option.type}");
+        
+        if (option.type == RewardType.Dice)
+        {
+            Debug.Log($"Attempting to add dice to inventory: {option.dice?.diceName}");
+            if (InventoryManager.Instance != null)
+            {
+                bool success = InventoryManager.Instance.AddDice(option.dice);
+                if (success) Debug.Log("Dice added to inventory successfully.");
+                else Debug.LogWarning("Failed to add dice to inventory (Full?).");
+            }
+            else
+            {
+                Debug.LogError("InventoryManager not found! Fallback to Spawner.");
+                // Fallback to spawning on board if no inventory
+                var spawner = FindFirstObjectByType<DiceSpawner>();
+                if (spawner != null) spawner.TrySpawnSpecificDice(option.dice);
+            }
+        }
+        else if (option.type == RewardType.Relic)
+        {
+            Debug.Log($"Adding relic: {option.relic?.relicName}");
+            if (RelicManager.Instance == null)
+            {
+                Debug.LogWarning("RelicManager instance not found. Creating one dynamically.");
+                GameObject go = new GameObject("RelicManager");
+                go.AddComponent<RelicManager>();
+            }
+            
+            if (RelicManager.Instance != null) 
+            {
+                RelicManager.Instance.AddRelic(option.relic);
+            }
+            else
+            {
+                Debug.LogError("Failed to create RelicManager!");
+            }
+        }
+        else if (option.type == RewardType.Skill)
+        {
+            Debug.Log($"Applying perk: {option.perk?.perkName}");
+            if (option.perk != null) option.perk.Apply();
+            else Debug.LogError("Perk data is null!");
         }
 
+        CloseRewards();
+    }
+
+    public void SkipReward()
+    {
+        if (PlayerCurrency.Instance != null)
+        {
+            PlayerCurrency.Instance.AddGold(skipGoldReward);
+        }
+        CloseRewards();
+    }
+
+    public void RerollRewards()
+    {
+        if (PlayerCurrency.Instance.SpendGold(rerollCost))
+        {
+            GenerateRewards(currentRewardType);
+        }
+    }
+
+    private void CloseRewards()
+    {
+        if (rewardUI != null) rewardUI.Hide();
         GameManager.Instance.FinishCombatPhase();
     }
 }

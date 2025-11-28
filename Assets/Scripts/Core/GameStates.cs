@@ -71,7 +71,7 @@ public class RewardState : IState
         Debug.Log("Entering Reward State");
         if (RewardManager.Instance != null)
         {
-            RewardManager.Instance.GenerateRewards();
+            RewardManager.Instance.GenerateRewards(RewardManager.RewardType.Dice); // Default to Dice if triggered manually
         }
         else
         {

@@ -6,7 +6,7 @@ public class MapGenerator : MonoBehaviour
 {
     public MapConfig config;
 
-    public List<List<MapNode>> GenerateMap()
+    public List<List<MapNode>> GenerateMap(int planeIndex = 1)
     {
         if (config == null)
         {
@@ -51,24 +51,6 @@ public class MapGenerator : MonoBehaviour
                     // Force Neighbors for End Node (Layer N-1)
                     else if (i == config.layers - 2)
                     {
-                        // End Node is at gridHeight/2 (Layer N, could be Even or Odd)
-                        // We need to ensure Layer N-1 has nodes that connect TO it.
-                        // If Layer N-1 is Even (and N is Odd): Connects to R and R-1 (of N). 
-                        // Wait, connection is Forward.
-                        // Layer N-1 (Even) connects to Layer N (Odd).
-                        // We want Layer N-1 nodes that connect to EndNode(R).
-                        // Even(R) -> Odd(R), Odd(R-1).
-                        // So if EndNode is R. We need Even(R) or Even(R+1)?
-                        // Let's trace back.
-                        // If N is Odd. End is R.
-                        // Even(R) connects to Odd(R) and Odd(R-1). So Even(R) connects to End(R).
-                        // Even(R+1) connects to Odd(R+1) and Odd(R). So Even(R+1) connects to End(R).
-                        
-                        // If N is Even. End is R.
-                        // Odd(R) connects to Even(R) and Even(R+1). So Odd(R) connects to End(R).
-                        // Odd(R-1) connects to Even(R-1) and Even(R). So Odd(R-1) connects to End(R).
-                        
-                        // Simplified: Just force nodes around the center in the penultimate layer
                         int center = gridHeight / 2;
                         if (row >= center - 1 && row <= center + 1)
                         {
@@ -85,7 +67,12 @@ public class MapGenerator : MonoBehaviour
 
                 NodeType type = GetRandomNodeType(i);
                 if (i == config.layers - 1) type = NodeType.Boss;
-                else if (i == 0) type = NodeType.Combat;
+                else if (i == 0)
+                {
+                    // Start Node Logic
+                    if (planeIndex > 1) type = NodeType.Shop; // Force Shop on Plane 2+
+                    else type = NodeType.Combat;
+                }
 
                 MapNode node = new MapNode(type, i, layerNodes.Count); 
                 node.rowIndex = row; 

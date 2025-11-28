@@ -21,6 +21,10 @@ public static class GameEvents
     // Player
     public static event Action OnPlayerDied;
     public static event Action OnGameOver;
+    
+    // Enemies
+    public static event Action OnEnemyKilled;
+    public static void RaiseEnemyKilled() => OnEnemyKilled?.Invoke();
 
     // Dice
     public static event Action<Dice, Dice> OnDiceMerged;

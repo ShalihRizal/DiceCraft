@@ -322,6 +322,12 @@ public class Dice : MonoBehaviour
             amount *= (1f + GameManager.Instance.globalDamageMultiplier);
         }
 
+        // Apply Relic Damage Multiplier
+        if (RelicManager.Instance != null)
+        {
+            amount *= RelicManager.Instance.GetDamageMultiplier();
+        }
+
         bool isCrit = Random.value < (runtimeStats.critChance + (GameManager.Instance != null ? GameManager.Instance.globalCritChance : 0f));
         if (isCrit) amount *= 2f;
 

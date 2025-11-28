@@ -34,6 +34,7 @@ public class GameSetupTool : EditorWindow
         CheckManager<GridSpawner>("GridSpawner");
         CheckManager<DiceSpawner>("DiceSpawner");
         CheckManager<EnemySpawner>("EnemySpawner");
+        CheckManager<RelicManager>("RelicManager");
         // CheckManager<ShopManager>("ShopManager"); // Shop disabled
 
         CheckManager<UIManager>("UIManager");
@@ -54,6 +55,7 @@ public class GameSetupTool : EditorWindow
         EnsureManager<GridSpawner>("GridSpawner");
         EnsureManager<DiceSpawner>("DiceSpawner");
         EnsureManager<EnemySpawner>("EnemySpawner");
+        EnsureManager<RelicManager>("RelicManager");
         // EnsureManager<ShopManager>("ShopManager"); // Shop disabled
         EnsureManager<UIManager>("UIManager");
 

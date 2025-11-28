@@ -9,19 +9,29 @@ public class PerkCardUI : MonoBehaviour
     public TextMeshProUGUI descText;
     public Button selectButton;
 
-    private PerkData perkData;
+    private RewardManager.RewardOption option;
 
-    public void Setup(PerkData data)
+    public void Setup(RewardManager.RewardOption option)
     {
-        perkData = data;
-        if (perkData == null) return;
+        this.option = option;
+        if (option == null) return;
 
-        if (nameText != null) nameText.text = perkData.perkName;
-        if (descText != null) descText.text = perkData.description;
+        // Name
+        if (nameText != null)
+        {
+            if (option.type == RewardManager.RewardType.Dice) nameText.text = option.dice != null ? option.dice.diceName : "Unknown Dice";
+            else if (option.type == RewardManager.RewardType.Relic) nameText.text = option.relic != null ? option.relic.relicName : "Unknown Relic";
+            else if (option.type == RewardManager.RewardType.Skill) nameText.text = option.perk != null ? option.perk.perkName : "Unknown Skill";
+        }
+        
+        // Description
+        if (descText != null) descText.text = option.description;
+        
+        // Icon
         if (iconImage != null)
         {
-            iconImage.sprite = perkData.icon;
-            iconImage.enabled = perkData.icon != null;
+            iconImage.sprite = option.icon;
+            iconImage.enabled = option.icon != null;
         }
 
         if (selectButton != null)
@@ -35,7 +45,7 @@ public class PerkCardUI : MonoBehaviour
     {
         if (RewardManager.Instance != null)
         {
-            RewardManager.Instance.SelectReward(perkData);
+            RewardManager.Instance.SelectReward(option);
         }
     }
 }

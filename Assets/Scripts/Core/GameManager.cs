@@ -94,10 +94,19 @@ public class GameManager : MonoBehaviour
         IsCombatActive = false;
         GameEvents.RaiseCombatEnded();
         
-        // Trigger Reward Phase
+        // Trigger Reward Phase based on Node Type
         if (RewardManager.Instance != null)
         {
-            RewardManager.Instance.GenerateRewards();
+            RewardManager.RewardType rewardType = RewardManager.RewardType.Dice; // Default
+            
+            if (MapManager.Instance != null && MapManager.Instance.currentNode != null)
+            {
+                NodeType nodeType = MapManager.Instance.currentNode.nodeType;
+                if (nodeType == NodeType.Elite) rewardType = RewardManager.RewardType.Relic;
+                else if (nodeType == NodeType.Boss) rewardType = RewardManager.RewardType.Skill;
+            }
+            
+            RewardManager.Instance.GenerateRewards(rewardType);
         }
         else
         {
