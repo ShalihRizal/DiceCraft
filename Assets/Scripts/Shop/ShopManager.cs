@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ShopManager : MonoBehaviour
 {
@@ -33,9 +34,28 @@ public class ShopManager : MonoBehaviour
         Instance = this;
     }
 
+    public Button closeButton;
+
     void Start()
     {
         if (shopItemUIPrefab == null) return;
+        
+        // Try to find close button if not assigned
+        if (closeButton == null && shopRootUI != null)
+        {
+            // New path: ShopCard/Header/CloseButton
+            Transform btnTr = shopRootUI.transform.Find("ShopCard/Header/CloseButton");
+            // Fallback for old path or direct child
+            if (btnTr == null) btnTr = shopRootUI.transform.Find("Header/CloseButton");
+            
+            if (btnTr != null) closeButton = btnTr.GetComponent<Button>();
+        }
+        
+        if (closeButton != null)
+        {
+            closeButton.onClick.RemoveAllListeners();
+            closeButton.onClick.AddListener(CloseShop);
+        }
         
         // Initial Generation
         GenerateDiceOffers();
@@ -46,7 +66,9 @@ public class ShopManager : MonoBehaviour
 
     public void ShowShop()
     {
-        shopUIContainer.gameObject.SetActive(true);
+        if (shopRootUI != null) shopRootUI.SetActive(true);
+        else if (shopContentContainer != null) shopContentContainer.gameObject.SetActive(true);
+        
         DisplayShop();
     }
 
@@ -90,11 +112,9 @@ public class ShopManager : MonoBehaviour
     public void DisplayShop()
     {
         // Clear containers
-        // Note: shopUIContainer is the main parent. We need to find or create sub-containers if they don't exist.
-        // For simplicity, let's assume shopUIContainer has a VerticalLayoutGroup.
-        // We will create "Row" objects for Dice, Relics, Services.
+        if (shopContentContainer == null) return;
         
-        foreach (Transform child in shopUIContainer) Destroy(child.gameObject);
+        foreach (Transform child in shopContentContainer) Destroy(child.gameObject);
 
         // 1. Dice Row
         CreateSectionHeader("Dice");
@@ -125,32 +145,46 @@ public class ShopManager : MonoBehaviour
         CreateServiceButton(serviceRow.transform, $"Reroll Dice ({rerollCost}g)", rerollCost, RerollDice);
         CreateServiceButton(serviceRow.transform, $"Reroll Relics ({rerollCost}g)", rerollCost, RerollRelics);
         
-        // Leave Button
-        CreateLeaveButton();
+        // Leave Button - Removed, using Header Close Button
+        // CreateLeaveButton();
+        
+        // Force Rebuild
+        LayoutRebuilder.ForceRebuildLayoutImmediate(shopContentContainer.GetComponent<RectTransform>());
     }
     
     private void CreateSectionHeader(string title)
     {
         GameObject textObj = new GameObject(title);
-        textObj.transform.SetParent(shopUIContainer, false);
+        textObj.transform.SetParent(shopContentContainer, false);
         TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
         text.text = title;
         text.alignment = TextAlignmentOptions.Left;
         text.color = Color.yellow;
         text.fontSize = 24;
-        textObj.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 40);
+        
+        // Layout Element
+        LayoutElement le = textObj.AddComponent<LayoutElement>();
+        le.minHeight = 40;
+        le.preferredHeight = 40;
+        le.flexibleWidth = 1;
     }
     
     private GameObject CreateRow(string name)
     {
         GameObject row = new GameObject(name);
-        row.transform.SetParent(shopUIContainer, false);
+        row.transform.SetParent(shopContentContainer, false);
         HorizontalLayoutGroup hlg = row.AddComponent<HorizontalLayoutGroup>();
         hlg.childControlWidth = false;
         hlg.childControlHeight = false;
         hlg.spacing = 20;
         hlg.childAlignment = TextAnchor.MiddleLeft;
-        row.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 150); // Height for items
+        
+        // Layout Element
+        LayoutElement le = row.AddComponent<LayoutElement>();
+        le.minHeight = 150;
+        le.preferredHeight = 150;
+        le.flexibleWidth = 1;
+        
         return row;
     }
     
@@ -195,7 +229,7 @@ public class ShopManager : MonoBehaviour
     private void CreateLeaveButton()
     {
         GameObject btnObj = new GameObject("LeaveButton");
-        btnObj.transform.SetParent(shopUIContainer, false);
+        btnObj.transform.SetParent(shopContentContainer, false);
         
         Image img = btnObj.AddComponent<Image>();
         img.color = Color.red;
@@ -294,11 +328,13 @@ public class ShopManager : MonoBehaviour
         }
     }
 
-    public Transform shopUIContainer; // Main container
+    public GameObject shopRootUI; // The entire UI (Background, Title, etc.)
+    public Transform shopContentContainer; // Where items are spawned
 
     public void HideShop()
     {
-        shopUIContainer.gameObject.SetActive(false);
+        if (shopRootUI != null) shopRootUI.SetActive(false);
+        else if (shopContentContainer != null) shopContentContainer.gameObject.SetActive(false); // Fallback
     }
 
     public void CloseShop()

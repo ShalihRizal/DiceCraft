@@ -82,6 +82,9 @@ public class GameManager : MonoBehaviour
         // Ensure Map is hidden (just in case)
         MapUI mapUI = FindFirstObjectByType<MapUI>(FindObjectsInactive.Include);
         if (mapUI != null) mapUI.Hide();
+
+        // Ensure Shop is hidden
+        if (ShopManager.Instance != null) ShopManager.Instance.HideShop();
         
         GameEvents.RaiseCombatStarted();
         

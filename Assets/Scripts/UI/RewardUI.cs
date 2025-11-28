@@ -178,9 +178,39 @@ public class RewardUI : MonoBehaviour
         }
     }
 
+    public TMPro.TextMeshProUGUI warningText;
+
     public void ShowWarning(string message)
     {
-        Debug.LogWarning($"[UI Warning] {message}");
-        // TODO: Implement proper UI feedback
+        if (warningText != null)
+        {
+            warningText.text = message;
+            warningText.gameObject.SetActive(true);
+            warningText.alpha = 1f;
+            
+            StopCoroutine("FadeWarning");
+            StartCoroutine("FadeWarning");
+        }
+        else
+        {
+            Debug.LogWarning($"[UI Warning] {message}");
+        }
+    }
+
+    private System.Collections.IEnumerator FadeWarning()
+    {
+        yield return new WaitForSeconds(2f);
+        float duration = 1f;
+        float elapsed = 0f;
+        
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            if (warningText != null)
+                warningText.alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
+            yield return null;
+        }
+        
+        if (warningText != null) warningText.gameObject.SetActive(false);
     }
 }

@@ -107,6 +107,26 @@ public class RewardUISetupTool : EditorWindow
         // 5. Setup Toggle Buttons
         SetupToggleButtons(panelGO, canvas.gameObject, rewardUI);
 
+        // 5b. Setup Warning Text
+        GameObject warningGO = GetChild(panelGO, "WarningText");
+        TextMeshProUGUI warningText = warningGO.GetComponent<TextMeshProUGUI>();
+        if (warningText == null) warningText = warningGO.AddComponent<TextMeshProUGUI>();
+        
+        warningText.fontSize = 24;
+        warningText.color = Color.red;
+        warningText.alignment = TextAlignmentOptions.Center;
+        warningText.raycastTarget = false;
+        
+        RectTransform warningRect = warningGO.GetComponent<RectTransform>();
+        warningRect.anchorMin = new Vector2(0.5f, 0.9f);
+        warningRect.anchorMax = new Vector2(0.5f, 0.9f);
+        warningRect.pivot = new Vector2(0.5f, 1);
+        warningRect.sizeDelta = new Vector2(400, 50);
+        warningRect.anchoredPosition = new Vector2(0, -20);
+        
+        rewardUI.warningText = warningText;
+        warningGO.SetActive(false);
+
         // 6. Assign Perks Database (Try to load all perks)
         string[] perkGuids = AssetDatabase.FindAssets("t:PerkData");
         manager.allPerks = new System.Collections.Generic.List<PerkData>();
