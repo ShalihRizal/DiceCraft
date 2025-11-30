@@ -31,6 +31,8 @@ public class RelicManager : MonoBehaviour
         GameEvents.OnEnemyKilled -= HandleEnemyKilled;
     }
 
+    public static event System.Action<RelicData> OnRelicAdded;
+
     public void AddRelic(RelicData relic)
     {
         if (!collectedRelics.Contains(relic))
@@ -38,6 +40,8 @@ public class RelicManager : MonoBehaviour
             collectedRelics.Add(relic);
             Debug.Log($"💎 Relic Acquired: {relic.relicName}");
             
+            OnRelicAdded?.Invoke(relic);
+
             // Apply immediate effects (On Pickup)
             if (relic.relicName.Contains("Potion") || relic.relicName.Contains("Heal"))
             {

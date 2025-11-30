@@ -89,7 +89,29 @@ public class EnemySpawner : MonoBehaviour
 
     private void SpawnEnemy(GameObject enemyPrefab)
     {
-        Vector3 spawnPos = new Vector3(Random.Range(-2.5f, 2.5f), 4f, 0f);
+        Vector3 spawnPos = Vector3.zero;
+        bool validPos = false;
+        int attempts = 0;
+
+        // Try to find a non-overlapping position
+        while (!validPos && attempts < 10)
+        {
+            spawnPos = new Vector3(Random.Range(-2.5f, 2.5f), Random.Range(3.5f, 4.5f), 0f); // Added Y variation
+            validPos = true;
+
+            foreach (var existingEnemy in activeEnemies)
+            {
+                if (Vector3.Distance(spawnPos, existingEnemy.transform.position) < 1.2f) // Minimum distance
+                {
+                    validPos = false;
+                    break;
+                }
+            }
+            attempts++;
+        }
+
+        if (!validPos) Debug.LogWarning("⚠️ Could not find non-overlapping spawn position, spawning anyway.");
+
         GameObject enemyGO = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
         Enemy enemy = enemyGO.GetComponent<Enemy>();
         

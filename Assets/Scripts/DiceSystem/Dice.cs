@@ -47,6 +47,14 @@ public class Dice : MonoBehaviour
         // ✅ Initialize runtimeStats if diceData already exists
         if (diceData != null && runtimeStats == null)
             runtimeStats = new RuntimeDiceData(diceData);
+
+        // ✅ Ensure Collider for Mouse Events
+        if (GetComponent<Collider2D>() == null)
+        {
+            BoxCollider2D col = gameObject.AddComponent<BoxCollider2D>();
+            col.isTrigger = true; // Trigger to avoid physics collisions
+            col.size = new Vector2(1f, 1f); // Default size
+        }
     }
 
     void Start()
@@ -100,8 +108,6 @@ public class Dice : MonoBehaviour
 
     private void HandleCombatStart()
     {
-        Debug.Log($"⚔️ Combat started — calling passives for {name}");
-
         // Trigger OnCombatStart passives first
         diceData?.passive?.OnCombatStart(this);
 
@@ -111,17 +117,44 @@ public class Dice : MonoBehaviour
 
     private void HandleCombatEnd()
     {
-        Debug.Log($"🏁 Combat ended — calling passives for {name}");
-
         // Trigger OnCombatEnd passives to reset stats
         diceData?.passive?.OnCombatEnd(this);
 
         StopFiring();
     }
 
+    private bool isRemoved = false;
+
+    public void NotifyRemoval(Vector3 atPosition)
+    {
+        if (isRemoved) return;
+        isRemoved = true;
+
+        // Temporarily move to the correct position so GetNeighbors() works for passives
+        Vector3 originalPos = transform.position;
+        transform.position = atPosition;
+
+        var neighbors = GetNeighbors(atPosition);
+
+        // Notify neighbors of removal at the specific position
+        foreach (var neighbor in neighbors)
+        {
+            neighbor.diceData?.passive?.OnNeighborRemoved(neighbor, this);
+        }
+
+        diceData?.passive?.OnDiceRemoved(this);
+        
+        // Restore position (though it will be destroyed soon)
+        transform.position = originalPos;
+
+        if (diceData != null) PlayVFX(VFXType.Destroy);
+    }
+
     void OnDestroy()
     {
-        // Notify neighbors of removal
+        if (isRemoved) return; // Already handled manually
+
+        // Notify neighbors of removal (fallback to current position)
         foreach (var neighbor in GetNeighbors())
         {
             neighbor.diceData?.passive?.OnNeighborRemoved(neighbor, this);
@@ -134,9 +167,36 @@ public class Dice : MonoBehaviour
     public void StartFiring()
     {
         if (runtimeStats == null || fireRoutine != null) return;
-        if (!diceData.canAttack) return; // 🛑 Check if dice can attack
+        if (!diceData.canAttack) return;
 
         fireRoutine = StartCoroutine(FireLoop());
+    }
+
+    // ...
+
+    IEnumerator FireLoop()
+    {
+        while (true)
+        {
+            // 🛑 Wait if no enemies are present
+            if (EnemySpawner.activeEnemies.Count == 0)
+            {
+                // Debug.Log($"zzz {name} waiting for enemies..."); // Too spammy
+                yield return null;
+                continue;
+            }
+
+            float fireRate = runtimeStats.fireInterval;
+            if (GameManager.Instance != null)
+            {
+                fireRate /= (1f + GameManager.Instance.globalFireRateMultiplier); // Higher multiplier = lower interval = faster fire
+            }
+            yield return new WaitForSeconds(Mathf.Max(0.001f, fireRate));
+            
+            // Double check before firing
+            if (EnemySpawner.activeEnemies.Count > 0)
+                FireProjectile();
+        }
     }
 
     public void PlayVFX(VFXType type)
@@ -219,6 +279,69 @@ public class Dice : MonoBehaviour
     // =========================
     private void OnMouseEnter()
     {
+        // 🛑 Block interaction if mouse is over UI (e.g. Reward Screen, Inventory)
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+        {
+            // Don't show tooltips during Reward Phase (focus on rewards)
+            if (GameManager.Instance != null && GameManager.Instance.IsRewardPhaseActive)
+            {
+                return;
+            }
+
+            UnityEngine.EventSystems.PointerEventData pointerData = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current)
+            {
+                position = UnityEngine.Input.mousePosition
+            };
+
+            System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult> results = new System.Collections.Generic.List<UnityEngine.EventSystems.RaycastResult>();
+            UnityEngine.EventSystems.EventSystem.current.RaycastAll(pointerData, results);
+
+            if (results.Count > 0)
+            {
+                // Check if any result is a blocking UI element (Layer 5 is usually UI)
+                foreach (var result in results)
+                {
+                    if (result.gameObject.layer == 5) // UI Layer
+                    {
+                        // 🛑 Ignore specific UI elements that shouldn't block tooltips
+                        if (!result.gameObject.activeInHierarchy) continue;
+
+                        bool isIgnored = false;
+                        Transform current = result.gameObject.transform;
+                        
+                        // Traverse up the hierarchy to check if any parent is in the ignore list
+                        while (current != null)
+                        {
+                            string currentName = current.name;
+                            
+                            if (currentName == "StartCombatButton" || 
+                                currentName == "CombatUI" || 
+                                currentName == "WaveProgressUI" || 
+                                currentName == "HealthBar" || 
+                                currentName == "ShieldBar" || 
+                                currentName == "CurrencyUI" || 
+                                currentName == "DayHourUI" ||
+                                currentName == "RerollButton" || 
+                                currentName == "RewardPanel" ||
+                                currentName.Contains("FloatingText")) // Ignore floating damage numbers
+                            {
+                                isIgnored = true;
+                                break;
+                            }
+                            // Stop if we hit the Canvas to avoid going too far up
+                            if (current.GetComponent<Canvas>() != null) break;
+                            current = current.parent;
+                        }
+
+                        if (isIgnored) continue;
+
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Highlight neighbors
         if (diceData?.passive != null)
         {
             var affected = diceData.passive.GetAffectedNeighbors(this);
@@ -226,6 +349,12 @@ public class Dice : MonoBehaviour
             {
                 d.ShowHighlight(true);
             }
+        }
+
+        // Show Tooltip
+        if (TooltipManager.Instance != null)
+        {
+            TooltipManager.Instance.ShowTooltip(this, transform.position);
         }
     }
 
@@ -236,6 +365,12 @@ public class Dice : MonoBehaviour
         foreach (var d in allDice)
         {
             d.ShowHighlight(false);
+        }
+
+        // Hide Tooltip
+        if (TooltipManager.Instance != null)
+        {
+            TooltipManager.Instance.HideTooltip();
         }
     }
 
@@ -285,29 +420,7 @@ public class Dice : MonoBehaviour
         }
     }
 
-    IEnumerator FireLoop()
-    {
-        while (true)
-        {
-            // 🛑 Wait if no enemies are present
-            if (EnemySpawner.activeEnemies.Count == 0)
-            {
-                yield return null;
-                continue;
-            }
 
-            float fireRate = runtimeStats.fireInterval;
-            if (GameManager.Instance != null)
-            {
-                fireRate /= (1f + GameManager.Instance.globalFireRateMultiplier); // Higher multiplier = lower interval = faster fire
-            }
-            yield return new WaitForSeconds(Mathf.Max(0.001f, fireRate));
-            
-            // Double check before firing
-            if (EnemySpawner.activeEnemies.Count > 0)
-                FireProjectile();
-        }
-    }
 
     void FireProjectile()
     {
@@ -388,6 +501,12 @@ public class Dice : MonoBehaviour
                 proj.isHoming = true;
                 proj.target = EnemySpawner.GetRandomEnemy();
                 proj.validToDamage = true;
+            }
+
+            // ✅ Assign Source Dice for Passives (e.g. Electro)
+            if (proj != null)
+            {
+                proj.sourceDice = this;
             }
 
             SpawnFloatingText(finalDamage, isCrit, multicastCount > 1);

@@ -26,7 +26,7 @@ MonoBehaviour:
   rarity: 0
   sides: 6
   baseDamage: 0
-  baseFireInterval: 1.2
+  baseFireInterval: 1.5
   cost: 180
   luck: 0
   diceCritChance: 0

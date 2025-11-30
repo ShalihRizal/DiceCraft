@@ -107,6 +107,9 @@ public class Projectile : MonoBehaviour
         }
     }
 
+    [Header("Source")]
+    public Dice sourceDice;
+
     void HandlePlayerProjectileCollision(Collider2D other)
     {
         // Ignore collision with Player
@@ -117,7 +120,23 @@ public class Projectile : MonoBehaviour
 
         if (hitEnemy != null)
         {
-            hitEnemy.TakeDamage(damage);
+            float damageDealt = damage;
+            hitEnemy.TakeDamage(damageDealt);
+
+            // 💥 Trigger OnEnemyHit for Source Dice
+            if (sourceDice != null && sourceDice.diceData != null && sourceDice.diceData.passive != null)
+            {
+                sourceDice.diceData.passive.OnEnemyHit(sourceDice, hitEnemy, ref damageDealt);
+            }
+
+            // 💥 Trigger OnEnemyHit for Neighbors (if they have passives that care)
+            if (sourceDice != null)
+            {
+                foreach (var neighbor in sourceDice.GetNeighbors())
+                {
+                    // neighbor.diceData?.passive?.OnNeighborHit(neighbor, sourceDice, hitEnemy, ref damageDealt); // If we had OnNeighborHit
+                }
+            }
 
             // 💥 Spawn hit effect
             if (hitEffectPrefab != null)

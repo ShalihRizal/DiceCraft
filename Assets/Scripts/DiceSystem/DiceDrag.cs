@@ -138,6 +138,7 @@ public class DiceDrag : MonoBehaviour
                         spawner.ReleaseCell(parentCell);
                     
                     // VFX?
+                    if (diceScript != null) diceScript.NotifyRemoval(originalPosition); // 🔄 Notify removal at OLD position
                     DOTween.Kill(transform);
                     Destroy(gameObject);
                     return;
@@ -198,6 +199,7 @@ public class DiceDrag : MonoBehaviour
                             diceScript.PlayVFX(VFXType.Merge);
                             otherDice.diceScript.PlayVFX(VFXType.Merge);
 
+                            if (diceScript != null) diceScript.NotifyRemoval(originalPosition); // 🔄 Notify removal at OLD position
                             DOTween.Kill(transform);
                             Destroy(gameObject);
                             mergeOrSwapOccurred = true;
@@ -327,10 +329,13 @@ public class DiceDrag : MonoBehaviour
                 }
             }
 
-            Debug.Log($"🪙 Sold {diceScript.diceData.diceName} for {refund} gold!");
             diceScript.PlayVFX(VFXType.Sold);
         }
 
+        if (diceScript != null) 
+        {
+            diceScript.NotifyRemoval(originalPosition);
+        }
         DOTween.Kill(transform);
         Destroy(gameObject);
     }

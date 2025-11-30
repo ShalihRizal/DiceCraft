@@ -25,13 +25,11 @@ MonoBehaviour:
   prefab: {fileID: 4223228544291816483, guid: 728903fb0cdc97d45a43400c42dd604b, type: 3}
   rarity: 0
   sides: 6
-  baseDamage: 10
-  baseFireInterval: 0.5
+  baseDamage: 0
+  baseFireInterval: 0
   cost: 100
   luck: 0
   diceCritChance: 0
-  growthDamage: 1
-  growthFireRate: 0.1
   passive: {fileID: 11400000, guid: 2e268dc94914ece49936e2f619bfb4e1, type: 2}
   maxUpgradeLevel: 3
   canAttack: 0

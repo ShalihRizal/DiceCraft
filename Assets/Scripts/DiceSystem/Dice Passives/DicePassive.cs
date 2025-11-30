@@ -97,8 +97,20 @@ public class DicePassive : ScriptableObject
 
     public virtual System.Collections.Generic.List<Dice> GetAffectedNeighbors(Dice owner)
     {
-        // Default: Affects all physical neighbors
-        return owner.GetNeighbors();
+        // Default: Affects NO neighbors (Override in specific passives like Anemo)
+        return new System.Collections.Generic.List<Dice>();
+    }
+
+    // =========================
+    // 🔹 Tooltip Projection
+    // =========================
+    /// <summary>
+    /// Returns the damage multiplier this passive would apply for tooltip display.
+    /// Override this in passives that modify damage (e.g., FirePassive).
+    /// </summary>
+    public virtual float GetProjectedDamageMultiplier(Dice owner)
+    {
+        return 1f; // Default: no modification
     }
 
     // =========================

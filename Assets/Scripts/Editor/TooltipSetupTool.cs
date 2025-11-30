@@ -20,13 +20,13 @@ public class TooltipSetupTool : EditorWindow
             Undo.RegisterCreatedObjectUndo(canvasObj, "Create Canvas");
         }
 
-        // 2. Find or Create DiceTooltipManager
-        DiceTooltipManager manager = FindFirstObjectByType<DiceTooltipManager>();
+        // 2. Find or Create TooltipManager
+        TooltipManager manager = FindFirstObjectByType<TooltipManager>();
         if (manager == null)
         {
-            GameObject managerObj = new GameObject("DiceTooltipManager");
-            manager = managerObj.AddComponent<DiceTooltipManager>();
-            Undo.RegisterCreatedObjectUndo(managerObj, "Create DiceTooltipManager");
+            GameObject managerObj = new GameObject("TooltipManager");
+            manager = managerObj.AddComponent<TooltipManager>();
+            Undo.RegisterCreatedObjectUndo(managerObj, "Create TooltipManager");
         }
 
         // 3. Create Tooltip Prefab if it doesn't exist

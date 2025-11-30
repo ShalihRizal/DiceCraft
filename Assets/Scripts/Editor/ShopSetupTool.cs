@@ -175,7 +175,6 @@ public class ShopSetupTool : EditorWindow
         LayoutElement le = temp.AddComponent<LayoutElement>();
         le.preferredWidth = 150;
         le.preferredHeight = 140;
-
         // Description
         GameObject descObj = new GameObject("Description");
         descObj.transform.SetParent(temp.transform, false);
@@ -183,7 +182,7 @@ public class ShopSetupTool : EditorWindow
         descText.text = "Item Description";
         descText.fontSize = 18;
         descText.alignment = TextAlignmentOptions.Center;
-        descText.enableWordWrapping = true;
+        descText.textWrappingMode = TextWrappingModes.Normal;
         
         // Button
         GameObject btnObj = new GameObject("BuyButton");

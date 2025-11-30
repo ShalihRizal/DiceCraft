@@ -26,12 +26,10 @@ MonoBehaviour:
   rarity: 0
   sides: 6
   baseDamage: 12
-  baseFireInterval: 0.6
+  baseFireInterval: 1
   cost: 120
   luck: 0
   diceCritChance: 0
-  growthDamage: 1
-  growthFireRate: 0.1
   passive: {fileID: 11400000, guid: ff6d906baedb6b8498acc47d3336ea7e, type: 2}
   maxUpgradeLevel: 3
   canAttack: 1

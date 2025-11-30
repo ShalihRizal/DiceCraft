@@ -35,6 +35,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             icon.sprite = null;
         
         icon.enabled = true;
+        icon.raycastTarget = true; // ✅ Ensure raycast target for tooltips
     }
 
     public void ClearSlot()
@@ -48,14 +49,21 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     {
         if (currentDice != null && dragIcon == null) // Don't show tooltip if dragging
         {
-            DiceTooltipManager.Instance.ShowTooltip(currentDice.baseData, transform.position);
+            if (TooltipManager.Instance != null)
+                TooltipManager.Instance.ShowTooltip(currentDice.baseData, transform.position);
         }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (DiceTooltipManager.Instance != null)
-            DiceTooltipManager.Instance.HideTooltip();
+        if (TooltipManager.Instance != null)
+            TooltipManager.Instance.HideTooltip();
+    }
+
+    void OnDisable()
+    {
+        if (TooltipManager.Instance != null)
+            TooltipManager.Instance.HideTooltip();
     }
 
     public void OnDrop(PointerEventData eventData)
@@ -104,7 +112,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         if (currentDice == null) return;
         if (GameManager.Instance != null && (GameManager.Instance.IsCombatActive || GameManager.Instance.IsRewardPhaseActive)) return;
 
-        DiceTooltipManager.Instance.HideTooltip();
+        if (TooltipManager.Instance != null)
+            TooltipManager.Instance.HideTooltip();
 
         // Create drag icon
         dragIcon = new GameObject("DragIcon");
