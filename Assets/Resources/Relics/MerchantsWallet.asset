@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a4aaf9a0af1de844ba4ad2dbe32a541, type: 3}
+  m_Name: MerchantsWallet
+  m_EditorClassIdentifier: Assembly-CSharp::RelicData
+  relicName: Merchant's Wallet
+  description: Gain +10 Gold on combat start.
+  icon: {fileID: 0}
+  rarity: 0
+  cost: 75
+  trigger: 1
+  effect: 2
+  baseValue: 10
+  valuePerLevel: 5
+  targetDiceData: {fileID: 0}
+  maxLevel: 5
+  currentLevel: 1
+  upgradeIcons: []

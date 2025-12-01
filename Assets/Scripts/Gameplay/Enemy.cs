@@ -35,21 +35,21 @@ public class Enemy : MonoBehaviour
         }
         else if (projectilePrefab == null)
         {
-             Debug.LogError($"Enemy {gameObject.name}: Projectile Prefab is null!");
+
         }
     }
 
     public void TakeDamage(float amount)
     {
         health -= amount;
-        Debug.Log($"Enemy Took Damage: {amount}. Current Health: {health}");
+
         if (healthUI != null) 
         {
             healthUI.UpdateHealth(health);
         }
         else
         {
-            Debug.LogWarning("Enemy: HealthUI is null!");
+
         }
 
         if (health <= 0f)
@@ -62,7 +62,7 @@ public class Enemy : MonoBehaviour
 
     public void Die()
     {
-        Debug.Log($"💀 {gameObject.name} died!");
+
         isDead = true;
         GameEvents.RaiseEnemyKilled();
         
@@ -70,7 +70,7 @@ public class Enemy : MonoBehaviour
         if (PlayerCurrency.Instance != null)
         {
             PlayerCurrency.Instance.AddGold(coinDropAmount);
-            Debug.Log($"💰 {gameObject.name} dropped {coinDropAmount} gold!");
+
         }
         
         // Notify spawner for wave progress
@@ -105,11 +105,10 @@ public class Enemy : MonoBehaviour
 
         if (ObjectPooler.Instance == null)
         {
-            Debug.LogWarning("ObjectPooler instance is null! Cannot spawn projectile.");
+
             return;
         }
 
-        Debug.Log($"Enemy {gameObject.name} shooting at player.");
         // Spawn slightly below the enemy to avoid immediate collision
         Vector3 spawnPos = transform.position + Vector3.down * 1.0f; 
         
@@ -122,7 +121,7 @@ public class Enemy : MonoBehaviour
             Projectile proj = projectile.GetComponent<Projectile>();
             if (proj == null)
             {
-                Debug.LogWarning($"Spawned object {projectile.name} missing Projectile component. Adding it dynamically.");
+
                 proj = projectile.AddComponent<Projectile>();
             }
 
@@ -132,16 +131,16 @@ public class Enemy : MonoBehaviour
                 proj.damage = projectileDamage;
                 proj.direction = Vector3.down;
                 proj.validToDamage = true;
-                Debug.Log($"Projectile spawned and configured. Damage: {proj.damage}");
+
             }
             else
             {
-                Debug.LogError("Failed to add Projectile component!");
+
             }
         }
         else
         {
-             Debug.LogError("Failed to spawn projectile from pool 'EnemyProjectile'.");
+
         }
     }
 }

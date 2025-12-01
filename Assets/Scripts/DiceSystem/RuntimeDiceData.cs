@@ -10,7 +10,7 @@ public class RuntimeDiceData
     public int diceSides;
     public int cost;
     public string diceName;
-    public int upgradeLevel = 0;
+    public int upgradeLevel = 1;
 
     public float luck;
 

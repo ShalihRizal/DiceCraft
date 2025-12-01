@@ -26,7 +26,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("PlayerHealth Awake called!");
+
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
@@ -147,7 +147,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Die()
     {
-        Debug.Log("💀 Player died!");
+
         StartCoroutine(HandleDeathSlowdown());
     }
 

@@ -100,8 +100,6 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        Debug.Log($"Selected Node: {node.nodeType} at Layer {node.layerIndex}");
-        
         // Transition to Gameplay Scene based on Type
         LoadNodeScene(node.nodeType);
     }
@@ -130,7 +128,7 @@ public class MapManager : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError("ShopManager not found!");
+
                     CompleteCurrentNode();
                 }
                 break;
@@ -176,13 +174,11 @@ public class MapManager : MonoBehaviour
     
     private void OnBossCompleted()
     {
-        Debug.Log($"🏆 Boss of Plane {currentPlane} Defeated!");
-        
+
         if (currentPlane < MaxPlanes)
         {
             currentPlane++;
-            Debug.Log($"✈️ Advancing to Plane {currentPlane}...");
-            
+
             // Increase Difficulty (Example)
             if (GameManager.Instance != null)
             {
@@ -194,7 +190,7 @@ public class MapManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("🎉 VICTORY! All Planes Cleared!");
+
             GameEvents.RaiseGameOver(); // Or RaiseVictory()
         }
     }

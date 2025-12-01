@@ -27,8 +27,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void SetDice(RuntimeDiceData dice)
     {
         currentDice = dice;
-        if (dice.baseData.upgradeSprites.Length > dice.upgradeLevel)
-            icon.sprite = dice.baseData.upgradeSprites[dice.upgradeLevel];
+        int spriteIndex = dice.upgradeLevel - 1; // Convert to 0-based index
+        if (spriteIndex >= 0 && spriteIndex < dice.baseData.upgradeSprites.Length)
+            icon.sprite = dice.baseData.upgradeSprites[spriteIndex];
         else if (dice.baseData.upgradeSprites.Length > 0)
             icon.sprite = dice.baseData.upgradeSprites[0]; // Fallback
         else
@@ -88,8 +89,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     
                     // Remove source
                     InventoryManager.Instance.RemoveDiceAt(sourceSlot.slotIndex);
-                    
-                    Debug.Log("✅ Merged inside Inventory!");
+
                     return;
                 }
             }
@@ -103,7 +103,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             // Logic to move dice from board to inventory
             // This requires DiceDrag to know about this slot or handle it here
             // For now, let's just log
-            Debug.Log($"Dropped dice on slot {slotIndex}");
+
         }
     }
 
@@ -162,7 +162,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
         // 🛑 Restrict placement during combat or reward phase
         if (GameManager.Instance != null && (GameManager.Instance.IsCombatActive || GameManager.Instance.IsRewardPhaseActive))
         {
-            Debug.LogWarning("⚠️ Cannot place dice during combat or reward phase!");
+
             // Optional: Show floating text or shake effect
             return;
         }
@@ -238,8 +238,9 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                             {
                                 newDice.runtimeStats = currentDice; // Transfer stats (level, etc.)
                                 // Update sprite
-                                if (newDice.diceData.upgradeSprites.Length > newDice.runtimeStats.upgradeLevel)
-                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[newDice.runtimeStats.upgradeLevel];
+                                int spriteIndex = newDice.runtimeStats.upgradeLevel - 1;
+                                if (spriteIndex >= 0 && spriteIndex < newDice.diceData.upgradeSprites.Length)
+                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[spriteIndex];
                             }
                             
                             InventoryManager.Instance.RemoveDiceAt(slotIndex);
@@ -268,8 +269,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
                                     // Remove from Inventory
                                     InventoryManager.Instance.RemoveDiceAt(slotIndex);
-                                    
-                                    Debug.Log("✅ Merged from Inventory!");
+
                                 }
                             }
                         }
@@ -299,20 +299,22 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                             if (newDice != null)
                             {
                                 newDice.runtimeStats = currentDice;
-                                if (newDice.diceData.upgradeSprites.Length > newDice.runtimeStats.upgradeLevel)
-                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[newDice.runtimeStats.upgradeLevel];
+                                int spriteIndex = newDice.runtimeStats.upgradeLevel - 1;
+                                if (spriteIndex >= 0 && spriteIndex < newDice.diceData.upgradeSprites.Length)
+                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[spriteIndex];
                             }
                             InventoryManager.Instance.RemoveDiceAt(slotIndex);
                         }
                         else
                         {
-                            // Duplicate Merge Logic (Refactor if possible, but inline is fine for now)
+                            // Duplicate Merge Logic
                             Dice diceOnBoard = bestCell.GetComponentInChildren<Dice>();
                             if (diceOnBoard != null && diceOnBoard.diceData == currentDice.baseData && diceOnBoard.runtimeStats.upgradeLevel == currentDice.upgradeLevel)
                             {
                                 diceOnBoard.runtimeStats.upgradeLevel++;
-                                if (diceOnBoard.diceData.upgradeSprites.Length > diceOnBoard.runtimeStats.upgradeLevel)
-                                    diceOnBoard.GetComponent<SpriteRenderer>().sprite = diceOnBoard.diceData.upgradeSprites[diceOnBoard.runtimeStats.upgradeLevel];
+                                int spriteIndex = diceOnBoard.runtimeStats.upgradeLevel - 1;
+                                if (spriteIndex >= 0 && spriteIndex < diceOnBoard.diceData.upgradeSprites.Length)
+                                    diceOnBoard.GetComponent<SpriteRenderer>().sprite = diceOnBoard.diceData.upgradeSprites[spriteIndex];
                                 
                                 diceOnBoard.PlayVFX(VFXType.Merge);
                                 GameEvents.RaiseDiceMerged(null, diceOnBoard);

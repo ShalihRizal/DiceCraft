@@ -26,9 +26,10 @@ public class UpgradePerk : PerkData
             {
                 randomDice.runtimeStats.upgradeLevel++;
                 // Update sprite
-                if (randomDice.runtimeStats.upgradeLevel < randomDice.diceData.upgradeSprites.Length)
+                int spriteIndex = randomDice.runtimeStats.upgradeLevel - 1;
+                if (spriteIndex >= 0 && spriteIndex < randomDice.diceData.upgradeSprites.Length)
                 {
-                    randomDice.GetComponent<SpriteRenderer>().sprite = randomDice.diceData.upgradeSprites[randomDice.runtimeStats.upgradeLevel];
+                    randomDice.GetComponent<SpriteRenderer>().sprite = randomDice.diceData.upgradeSprites[spriteIndex];
                 }
                 randomDice.PlayVFX(VFXType.Merge); // Reuse merge effect
                 Debug.Log($"⬆ Perk Applied: Upgraded {randomDice.name}");

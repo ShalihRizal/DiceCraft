@@ -10,12 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9a4aaf9a0af1de844ba4ad2dbe32a541, type: 3}
-  m_Name: Warrior'sRing
+  m_Name: TitansHeart
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
-  relicName: Warrior's Ring
-  description: Increases damage by 10%.
+  relicName: Titan's Heart
+  description: Increases Max HP by 20.
   icon: {fileID: 0}
-  rarity: 1
-  cost: 200
-  effectType: 1
-  effectValue: 0.1
+  rarity: 3
+  cost: 300
+  trigger: 0
+  effect: 4
+  baseValue: 20
+  valuePerLevel: 0
+  targetDiceData: {fileID: 0}
+  maxLevel: 1
+  currentLevel: 1
+  upgradeIcons: []

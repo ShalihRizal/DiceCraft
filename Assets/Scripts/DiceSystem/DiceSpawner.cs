@@ -92,7 +92,7 @@ public class DiceSpawner : MonoBehaviour
 
         if (availableCells.Count == 0)
         {
-            Debug.LogWarning("Cannot place dice: Board is full!");
+
             return null;
         }
 
@@ -123,7 +123,7 @@ public class DiceSpawner : MonoBehaviour
 
         if (occupiedCells.Contains(cell))
         {
-            Debug.LogWarning("Cannot spawn dice: Cell is occupied!");
+
             return null;
         }
 

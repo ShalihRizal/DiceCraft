@@ -31,6 +31,21 @@ public class DicePassive : ScriptableObject
     public float duration = 0f;
     public float cooldown = 0f;
 
+    [Header("Passive Scaling")]
+    [Tooltip("Base value at level 1")]
+    public float baseValue = 0f;
+    [Tooltip("How much the value increases per level")]
+    public float valuePerLevel = 0f;
+
+    /// <summary>
+    /// Get the scaled value for this passive based on dice level
+    /// </summary>
+    public float GetScaledValue(int level)
+    {
+        if (baseValue == 0f && valuePerLevel == 0f) return 0f;
+        return baseValue + (valuePerLevel * (level - 1));
+    }
+
     // =========================
     // 🔹 Core Dice Lifecycle
     // =========================
@@ -111,6 +126,15 @@ public class DicePassive : ScriptableObject
     public virtual float GetProjectedDamageMultiplier(Dice owner)
     {
         return 1f; // Default: no modification
+    }
+
+    /// <summary>
+    /// Returns a formatted description with actual numbers for tooltip display.
+    /// Override this in passives to show specific values.
+    /// </summary>
+    public virtual string GetFormattedDescription(Dice owner)
+    {
+        return description; // Default: return static description
     }
 
     // =========================

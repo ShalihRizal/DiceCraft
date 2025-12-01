@@ -138,7 +138,21 @@ public class DiceTooltip : MonoBehaviour
             }
             if (passiveDescText != null)
             {
-                passiveDescText.text = data.passive.description;
+                // Use formatted description if we have a dice instance
+                Dice[] allDice = FindObjectsByType<Dice>(FindObjectsSortMode.None);
+                Dice ownerDice = null;
+                foreach (var dice in allDice)
+                {
+                    if (dice.runtimeStats == runtime || dice.diceData == data)
+                    {
+                        ownerDice = dice;
+                        break;
+                    }
+                }
+
+                passiveDescText.text = ownerDice != null 
+                    ? data.passive.GetFormattedDescription(ownerDice)
+                    : data.passive.description;
                 passiveDescText.gameObject.SetActive(true);
             }
         }
@@ -170,6 +184,85 @@ public class DiceTooltip : MonoBehaviour
         {
             passiveDescText.text = relic.description;
             passiveDescText.gameObject.SetActive(true);
+        }
+    }
+
+    /// <summary>
+    /// Show merge preview with current level and next level stats
+    /// </summary>
+    public void SetMergePreview(Dice currentDice, int nextLevel)
+    {
+        if (currentDice == null || currentDice.diceData == null) return;
+
+        DiceData data = currentDice.diceData;
+        int currentLevel = currentDice.runtimeStats != null ? currentDice.runtimeStats.upgradeLevel : 1;
+
+        if (nameText != null)
+        {
+            nameText.text = $"{data.diceName} - Merge Preview";
+        }
+
+        // Show current and next level damage
+        if (damageText != null && data.canAttack)
+        {
+            float currentDmg = currentDice.runtimeStats != null ? currentDice.runtimeStats.baseDamage : data.baseDamage;
+            float nextDmg = currentDmg; // Same base damage (passives might change)
+            
+            damageText.text = $"Damage: {currentDmg} → {nextDmg}";
+            damageText.color = Color.cyan;
+            damageText.gameObject.SetActive(true);
+        }
+
+        // Show current and next level fire rate
+        if (fireRateText != null)
+        {
+            float currentInterval = currentDice.runtimeStats != null ? currentDice.runtimeStats.fireInterval : data.baseFireInterval;
+            float nextInterval = currentInterval; // Same (unless passive changes it)
+            
+            fireRateText.text = $"Fire Rate: {currentInterval:F2}s → {nextInterval:F2}s";
+            fireRateText.gameObject.SetActive(true);
+        }
+
+        if (sidesText != null)
+        {
+            sidesText.text = $"Sides: {data.sides}";
+            sidesText.gameObject.SetActive(true);
+        }
+
+        // Show passive upgrade preview
+        if (data.passive != null)
+        {
+            if (passiveNameText != null)
+            {
+                passiveNameText.text = $"{data.passive.passiveName} (Lv.{currentLevel} → Lv.{nextLevel})";
+                passiveNameText.gameObject.SetActive(true);
+            }
+
+            if (passiveDescText != null)
+            {
+                // Create a temporary runtime data for next level preview
+                RuntimeDiceData tempRuntime = new RuntimeDiceData(data);
+                tempRuntime.upgradeLevel = nextLevel;
+                
+                // Create a temporary dice for preview
+                GameObject tempObj = new GameObject("TempDicePreview");
+                Dice tempDice = tempObj.AddComponent<Dice>();
+                tempDice.diceData = data;
+                tempDice.runtimeStats = tempRuntime;
+
+                string currentDesc = data.passive.GetFormattedDescription(currentDice);
+                string nextDesc = data.passive.GetFormattedDescription(tempDice);
+
+                Destroy(tempObj);
+
+                passiveDescText.text = $"Current: {currentDesc}\n<color=#00FF00>Next: {nextDesc}</color>";
+                passiveDescText.gameObject.SetActive(true);
+            }
+        }
+        else
+        {
+            if (passiveNameText != null) passiveNameText.gameObject.SetActive(false);
+            if (passiveDescText != null) passiveDescText.gameObject.SetActive(false);
         }
     }
 }

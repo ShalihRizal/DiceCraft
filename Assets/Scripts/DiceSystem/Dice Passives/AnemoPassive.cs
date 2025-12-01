@@ -90,13 +90,44 @@ public class AnemoPassive : DicePassive
         // Get current buff count (number of unique sources)
         int buffCount = buffSources.ContainsKey(target) ? buffSources[target].Count : 0;
         
+        if (buffCount == 0)
+        {
+            target.runtimeStats.fireInterval = baseInterval;
+            return;
+        }
+
+        // Get the buff value from the first source (they should all be the same passive type)
+        float buffValue = attackSpeedBuff; // Default fallback
+        
+        foreach (var source in buffSources[target])
+        {
+            if (source != null && source.diceData != null && source.diceData.passive == this)
+            {
+                // Use scaled value based on source dice level
+                int sourceLevel = source.runtimeStats != null ? source.runtimeStats.upgradeLevel : 1;
+                buffValue = GetScaledValue(sourceLevel);
+                if (buffValue == 0f) buffValue = attackSpeedBuff; // Fallback to default
+                break; // Use first source's level
+            }
+        }
+        
         // Apply buff based on count (stacks multiplicatively)
-        float totalMultiplier = Mathf.Pow(1f + attackSpeedBuff, buffCount);
+        float totalMultiplier = Mathf.Pow(1f + buffValue, buffCount);
         target.runtimeStats.fireInterval = baseInterval / totalMultiplier;
     }
 
     public override System.Collections.Generic.List<Dice> GetAffectedNeighbors(Dice owner)
     {
         return owner.GetNeighbors();
+    }
+
+    public override string GetFormattedDescription(Dice owner)
+    {
+        int level = owner != null && owner.runtimeStats != null ? owner.runtimeStats.upgradeLevel : 1;
+        float buffValue = GetScaledValue(level);
+        if (buffValue == 0f) buffValue = attackSpeedBuff; // Fallback
+        
+        int percentBonus = Mathf.RoundToInt(buffValue * 100f);
+        return $"+{percentBonus}% attack speed for adjacent dice (stacks).";
     }
 }

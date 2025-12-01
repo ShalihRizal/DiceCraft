@@ -31,7 +31,7 @@ public class EnemySpawner : MonoBehaviour
     {
         if (isSpawning)
         {
-            Debug.LogWarning("⚠️ Combat already in progress, ignoring duplicate call");
+
             return;
         }
 
@@ -47,8 +47,6 @@ public class EnemySpawner : MonoBehaviour
         while (currentWaveIndex < waves.Count)
         {
             WaveConfig wave = waves[currentWaveIndex];
-
-            Debug.Log($"🌊 Spawning Wave {currentWaveIndex + 1}/{waves.Count}: {wave.count} enemies");
 
             // Reset wave progress
             enemiesKilledThisWave = 0;
@@ -67,7 +65,6 @@ public class EnemySpawner : MonoBehaviour
             // Wait for all enemies to be defeated
             yield return new WaitUntil(() => activeEnemies.Count == 0);
 
-            Debug.Log($"✅ Wave {currentWaveIndex + 1} cleared!");
             currentWaveIndex++;
 
             // Small delay between waves (1 second)
@@ -78,7 +75,7 @@ public class EnemySpawner : MonoBehaviour
         }
 
         // All waves complete
-        Debug.Log("✅ All waves cleared!");
+
         isSpawning = false;
         
         if (GameManager.Instance != null)
@@ -134,7 +131,7 @@ public class EnemySpawner : MonoBehaviour
     public void OnEnemyKilled()
     {
         enemiesKilledThisWave++;
-        Debug.Log($"Enemy killed! Progress: {enemiesKilledThisWave}/{totalEnemiesThisWave}");
+
         GameEvents.RaiseWaveProgressChanged(enemiesKilledThisWave, totalEnemiesThisWave);
     }
 

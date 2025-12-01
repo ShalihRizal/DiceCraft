@@ -75,9 +75,10 @@ public class Dice : MonoBehaviour
         // Apply default sprite
         if (diceData != null && diceData.upgradeSprites != null && diceData.upgradeSprites.Length > 0 && spriteRenderer != null)
         {
-            int level = runtimeStats != null ? runtimeStats.upgradeLevel : 0;
-            if (level < diceData.upgradeSprites.Length)
-                spriteRenderer.sprite = diceData.upgradeSprites[level];
+            int level = runtimeStats != null ? runtimeStats.upgradeLevel : 1;
+            int spriteIndex = level - 1; // Convert to 0-based index
+            if (spriteIndex >= 0 && spriteIndex < diceData.upgradeSprites.Length)
+                spriteRenderer.sprite = diceData.upgradeSprites[spriteIndex];
             else
                 spriteRenderer.sprite = diceData.upgradeSprites[0];
         }

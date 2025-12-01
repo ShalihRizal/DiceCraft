@@ -183,6 +183,16 @@ public class TooltipManager : MonoBehaviour
         tooltip.localPosition = pos;
     }
 
+    public void ShowMergePreview(Dice currentDice, int nextLevel, Vector3 worldPosition)
+    {
+        EnsureTooltipInstance();
+        if (tooltipInstance == null) return;
+
+        SetTooltipPosition(worldPosition);
+        tooltipInstance.SetMergePreview(currentDice, nextLevel);
+        tooltipInstance.gameObject.SetActive(true);
+    }
+
     public void HideTooltip()
     {
         if (tooltipInstance != null)

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a4aaf9a0af1de844ba4ad2dbe32a541, type: 3}
+  m_Name: AncientLighter
+  m_EditorClassIdentifier: Assembly-CSharp::RelicData
+  relicName: Ancient Lighter
+  description: Increases Fire Dice passive damage bonus by 10%.
+  icon: {fileID: 0}
+  rarity: 2
+  cost: 180
+  trigger: 0
+  effect: 6
+  baseValue: 0.1
+  valuePerLevel: 0.05
+  targetDiceData: {fileID: 11400000, guid: f8e4e79631965954ca41b10d87688578, type: 2}
+  maxLevel: 3
+  currentLevel: 1
+  upgradeIcons: []

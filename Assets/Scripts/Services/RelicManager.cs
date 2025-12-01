@@ -48,7 +48,7 @@ public class RelicManager : MonoBehaviour
                  var playerHealth = FindFirstObjectByType<PlayerHealth>();
                  if (playerHealth != null)
                  {
-                     playerHealth.Heal(relic.effectValue);
+                     playerHealth.Heal(relic.GetCurrentValue());
                      Debug.Log($"Applied immediate healing from {relic.relicName}");
                  }
             }
@@ -57,20 +57,19 @@ public class RelicManager : MonoBehaviour
 
     private void HandleCombatStart()
     {
-        foreach (var relic in collectedRelics)
-        {
-            if (relic.effectType == RelicEffectType.OnCombatStart)
-            {
-                ApplyEffect(relic);
-            }
-        }
+        ApplyRelicEffects(RelicTrigger.OnCombatStart);
     }
 
     private void HandleEnemyKilled()
     {
+        ApplyRelicEffects(RelicTrigger.OnKill);
+    }
+
+    private void ApplyRelicEffects(RelicTrigger trigger)
+    {
         foreach (var relic in collectedRelics)
         {
-            if (relic.effectType == RelicEffectType.OnKill)
+            if (relic.trigger == trigger)
             {
                 ApplyEffect(relic);
             }
@@ -79,33 +78,37 @@ public class RelicManager : MonoBehaviour
 
     private void ApplyEffect(RelicData relic)
     {
-        Debug.Log($"⚡ Relic Activated: {relic.relicName}");
-        
-        switch (relic.effectType)
+        Debug.Log($"⚡ Relic Activated: {relic.relicName} (Level {relic.currentLevel})");
+        float value = relic.GetCurrentValue();
+
+        switch (relic.effect)
         {
-            case RelicEffectType.OnCombatStart:
-                // Example: Lucky Coin (+Gold)
-                if (relic.relicName.Contains("Coin"))
+            case RelicEffect.Heal:
+                var playerHealth = FindFirstObjectByType<PlayerHealth>();
+                if (playerHealth != null)
                 {
-                    if (PlayerCurrency.Instance != null)
-                        PlayerCurrency.Instance.AddGold((int)relic.effectValue);
+                    playerHealth.Heal(value);
+                    Debug.Log($"[Relic] Healed {value} HP");
                 }
                 break;
 
-            case RelicEffectType.OnKill:
-                // Example: Vampiric Dagger (Heal on Kill)
-                if (relic.relicName.Contains("Dagger") || relic.relicName.Contains("Vampiric"))
+            case RelicEffect.GainGold:
+                if (PlayerCurrency.Instance != null)
                 {
-                    var playerHealth = FindFirstObjectByType<PlayerHealth>();
-                    if (playerHealth != null)
-                        playerHealth.Heal(relic.effectValue);
+                    PlayerCurrency.Instance.AddGold((int)value);
+                    Debug.Log($"[Relic] Gained {value} Gold");
                 }
                 break;
                 
-            case RelicEffectType.StatBoost:
-                // Applied on acquisition or checked dynamically
-                // For now, let's assume it's applied when added
-                break;
+            case RelicEffect.MaxHealth:
+                 var ph = FindFirstObjectByType<PlayerHealth>();
+                 if (ph != null)
+                 {
+                     // Assuming PlayerHealth has a way to increase max health
+                     // ph.IncreaseMaxHealth((int)value); 
+                     Debug.Log($"[Relic] Max Health increased by {value} (Not fully implemented in PlayerHealth)");
+                 }
+                 break;
         }
     }
 
@@ -114,11 +117,53 @@ public class RelicManager : MonoBehaviour
         float multiplier = 1f;
         foreach (var relic in collectedRelics)
         {
-            if (relic.effectType == RelicEffectType.StatBoost && relic.relicName.Contains("Ring"))
+            if (relic.trigger == RelicTrigger.Passive && relic.effect == RelicEffect.DamageMultiplier)
             {
-                multiplier += relic.effectValue;
+                multiplier += relic.GetCurrentValue();
             }
         }
         return multiplier;
+    }
+    
+    public float GetCritChanceBonus()
+    {
+        float bonus = 0f;
+        foreach (var relic in collectedRelics)
+        {
+            if (relic.trigger == RelicTrigger.Passive && relic.effect == RelicEffect.CritChance)
+            {
+                bonus += relic.GetCurrentValue();
+            }
+        }
+        return bonus;
+    }
+
+    public void UpgradeRelic(RelicData relic)
+    {
+        if (collectedRelics.Contains(relic))
+        {
+            relic.Upgrade();
+            Debug.Log($"⬆️ Upgraded {relic.relicName} to Level {relic.currentLevel}");
+        }
+    }
+
+    /// <summary>
+    /// Get the passive boost multiplier for a specific dice type
+    /// </summary>
+    public float GetDicePassiveBoost(DiceData diceData)
+    {
+        if (diceData == null) return 0f;
+        
+        float boost = 0f;
+        foreach (var relic in collectedRelics)
+        {
+            if (relic.trigger == RelicTrigger.Passive && 
+                relic.effect == RelicEffect.DicePassiveBoost && 
+                relic.targetDiceData == diceData)
+            {
+                boost += relic.GetCurrentValue();
+            }
+        }
+        return boost;
     }
 }
