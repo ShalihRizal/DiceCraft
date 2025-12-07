@@ -160,7 +160,11 @@ public class MapManager : MonoBehaviour
     public void CompleteCurrentNode()
     {
         // Called when player wins combat or finishes shop
-        // Return to Map View
+        // Increase difficulty for next node
+        if (DifficultyManager.Instance != null)
+        {
+            DifficultyManager.Instance.OnNodeCompleted();
+        }
         
         if (currentNode != null && currentNode.nodeType == NodeType.Boss)
         {

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da925515f2091c5489364169c3d1971e, type: 3}
+  m_Name: Trait_SummonMinions
+  m_EditorClassIdentifier: Assembly-CSharp::SummonMinionsTrait
+  traitName: Troll's Resolve
+  description: '{TriggerEvent} : Summons {MinionCount} {MinionPrefab)'
+  icon: {fileID: 21300000, guid: 189067e2bc7eb984a92f7c0eef6dc60e, type: 3}
+  triggerEvent: 3
+  minionPrefab: {fileID: 3217433932108092086, guid: 50b00473e1775c54080bd2d672cbfbcc, type: 3}
+  minionCount: 2
+  spawnRadius: 2

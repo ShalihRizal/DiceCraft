@@ -12,6 +12,7 @@ public class DiceData : ScriptableObject
     public int sides;
     public float baseDamage;
     public float baseFireInterval = 2f;
+    public float projectileSpeed = 10f; // New field
     public int cost;
     public float luck = 0f;
     public float diceCritChance = 0f;

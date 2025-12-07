@@ -52,7 +52,254 @@ public class TooltipManager : MonoBehaviour
 
         SetTooltipPosition(worldPosition);
         tooltipInstance.SetInfo(relic);
+        
+        // Ensure the tooltip text is updated with the dynamic description
+        if (tooltipInstance.passiveDescText != null)
+        {
+            tooltipInstance.passiveDescText.text = relic.GetDescription();
+            tooltipInstance.passiveDescText.gameObject.SetActive(true);
+        }
+        
         tooltipInstance.gameObject.SetActive(true);
+    }
+
+    public void ShowTooltip(Enemy enemy, Vector3 worldPosition)
+    {
+        if (enemy == null || enemy.enemyData == null) return;
+
+        EnsureTooltipInstance();
+        if (tooltipInstance == null) return;
+
+        SetTooltipPosition(worldPosition);
+        
+        EnemyData data = enemy.enemyData;
+
+        // Show enemy name with type color and level
+        if (tooltipInstance.nameText != null)
+        {
+            string typeBadge = data.enemyType switch
+            {
+                EnemyType.Elite => "[ELITE]",
+                EnemyType.Boss => "[BOSS]",
+                _ => ""
+            };
+            
+            string levelText = "";
+            if (DifficultyManager.Instance != null)
+            {
+                levelText = $" {DifficultyManager.Instance.GetLevelDisplay()}";
+            }
+            
+            tooltipInstance.nameText.text = $"{data.enemyName} {typeBadge}{levelText}";
+            tooltipInstance.nameText.color = GetEnemyTypeColor(data.enemyType);
+        }
+
+        // Show HP (current, not base)
+        if (tooltipInstance.fireRateText != null)
+        {
+            float maxHP = enemy.enemyData.maxHealth;
+            if (DifficultyManager.Instance != null)
+            {
+                maxHP = DifficultyManager.Instance.GetScaledHP(maxHP, data.enemyType);
+            }
+            
+            tooltipInstance.fireRateText.text = $"HP: {Mathf.CeilToInt(enemy.health)} / {Mathf.CeilToInt(maxHP)}";
+            tooltipInstance.fireRateText.gameObject.SetActive(true);
+        }
+
+        // Show Damage (actual scaled value)
+        if (tooltipInstance.damageText != null)
+        {
+            // Use the enemy's actual damage (already scaled)
+            float damage = enemy.projectileDamage;
+            
+            tooltipInstance.damageText.text = $"Damage: {Mathf.RoundToInt(damage)}";
+            tooltipInstance.damageText.color = Color.red;
+            tooltipInstance.damageText.gameObject.SetActive(true);
+        }
+
+        // Show Attack Speed
+        if (tooltipInstance.sidesText != null)
+        {
+            float interval = data.attackInterval;
+            if (DifficultyManager.Instance != null)
+            {
+                interval = DifficultyManager.Instance.GetScaledAttackInterval(interval);
+            }
+            
+            tooltipInstance.sidesText.text = $"Attack Speed: {interval:F2}s";
+            tooltipInstance.sidesText.gameObject.SetActive(true);
+        }
+
+        // Show Traits
+        if (tooltipInstance.passiveNameText != null && tooltipInstance.passiveDescText != null)
+        {
+            if (data.traits != null && data.traits.Count > 0)
+            {
+                tooltipInstance.passiveNameText.text = "Traits:";
+                tooltipInstance.passiveNameText.gameObject.SetActive(true);
+
+                string traitList = "";
+                foreach (var trait in data.traits)
+                {
+                    if (trait != null)
+                    {
+                        traitList += $"• {trait.traitName}: {trait.GetDescription()}\n";
+                    }
+                }
+                
+                tooltipInstance.passiveDescText.text = traitList.TrimEnd('\n');
+                tooltipInstance.passiveDescText.gameObject.SetActive(true);
+            }
+            else
+            {
+                tooltipInstance.passiveNameText.gameObject.SetActive(false);
+                tooltipInstance.passiveDescText.gameObject.SetActive(false);
+            }
+        }
+
+        tooltipInstance.gameObject.SetActive(true);
+    }
+    
+    public void ShowTooltip(EnemyTrait trait, Vector3 worldPosition)
+    {
+        EnsureTooltipInstance();
+        if (tooltipInstance == null) return;
+
+        SetTooltipPosition(worldPosition);
+        
+        // Clear previous info
+        if (tooltipInstance.nameText != null) 
+        {
+            tooltipInstance.nameText.text = trait.traitName;
+            tooltipInstance.nameText.color = Color.white;
+        }
+        
+        // Hide stats
+        if (tooltipInstance.fireRateText != null) tooltipInstance.fireRateText.gameObject.SetActive(false);
+        if (tooltipInstance.damageText != null) tooltipInstance.damageText.gameObject.SetActive(false);
+        if (tooltipInstance.sidesText != null) tooltipInstance.sidesText.gameObject.SetActive(false);
+        if (tooltipInstance.passiveNameText != null) tooltipInstance.passiveNameText.gameObject.SetActive(false);
+        
+        if (tooltipInstance.passiveDescText != null)
+        {
+            tooltipInstance.passiveDescText.text = trait.GetDescription();
+            tooltipInstance.passiveDescText.gameObject.SetActive(true);
+        }
+        
+        tooltipInstance.gameObject.SetActive(true);
+    }
+
+    public void ShowTooltip(LootDrop loot, Vector3 worldPosition)
+    {
+        EnsureTooltipInstance();
+        if (tooltipInstance == null) return;
+
+        SetTooltipPosition(worldPosition);
+
+        // Reset text
+        if (tooltipInstance.nameText != null)
+        {
+            tooltipInstance.nameText.text = $"{loot.type}";
+            tooltipInstance.nameText.color = Color.yellow; // Default loot color
+        }
+
+        // Hide stats
+        if (tooltipInstance.fireRateText != null) tooltipInstance.fireRateText.gameObject.SetActive(false);
+        if (tooltipInstance.damageText != null) tooltipInstance.damageText.gameObject.SetActive(false);
+        if (tooltipInstance.sidesText != null) tooltipInstance.sidesText.gameObject.SetActive(false);
+        if (tooltipInstance.passiveNameText != null) tooltipInstance.passiveNameText.gameObject.SetActive(false);
+
+        // Description: Show Amount
+        if (tooltipInstance.passiveDescText != null)
+        {
+            tooltipInstance.passiveDescText.text = $"Amount: {loot.amount}";
+            if (loot.type == LootType.Relic)
+                tooltipInstance.passiveDescText.text = $"Rarity: {loot.relicRarity}";
+            
+            tooltipInstance.passiveDescText.gameObject.SetActive(true);
+        }
+
+        if (tooltipInstance.GetComponent<CanvasGroup>() != null)
+            tooltipInstance.GetComponent<CanvasGroup>().blocksRaycasts = false;
+
+        tooltipInstance.gameObject.SetActive(true);
+    }
+
+    Color GetEnemyTypeColor(EnemyType type)
+    {
+        return type switch
+        {
+            EnemyType.Normal => Color.white,
+            EnemyType.Elite => new Color(1f, 0.84f, 0f), // Gold
+            EnemyType.Boss => new Color(1f, 0.2f, 0.2f), // Red
+            _ => Color.white
+        };
+    }
+
+    public void ShowTooltip(MapNode node, Vector3 worldPosition)
+    {
+        // For map nodes, show node type and description
+        EnsureTooltipInstance();
+        if (tooltipInstance == null) return;
+
+        // Use DiceTooltip's name/description fields for now
+        // Or create a separate MapNodeTooltip instance
+        SetTooltipPosition(worldPosition);
+        
+        // Temporary: Show basic info using dice tooltip
+        if (tooltipInstance.nameText != null)
+        {
+            tooltipInstance.nameText.text = GetNodeTypeName(node.nodeType);
+        }
+        
+        if (tooltipInstance.passiveDescText != null)
+        {
+            tooltipInstance.passiveDescText.text = GetNodeDescription(node.nodeType);
+            tooltipInstance.passiveDescText.gameObject.SetActive(true);
+        }
+        
+        if (tooltipInstance.passiveNameText != null)
+        {
+            tooltipInstance.passiveNameText.gameObject.SetActive(false);
+        }
+        
+        // Hide dice-specific stats
+        if (tooltipInstance.fireRateText != null) tooltipInstance.fireRateText.gameObject.SetActive(false);
+        if (tooltipInstance.damageText != null) tooltipInstance.damageText.gameObject.SetActive(false);
+        if (tooltipInstance.sidesText != null) tooltipInstance.sidesText.gameObject.SetActive(false);
+        
+        tooltipInstance.gameObject.SetActive(true);
+    }
+
+    string GetNodeTypeName(NodeType type)
+    {
+        return type switch
+        {
+            NodeType.Combat => "Combat",
+            NodeType.Elite => "Elite Enemy",
+            NodeType.Shop => "Shop",
+            NodeType.Campfire => "Campfire",
+            NodeType.Event => "Random Event",
+            NodeType.Boss => "BOSS",
+            NodeType.Reward => "Reward",
+            _ => "Unknown"
+        };
+    }
+
+    string GetNodeDescription(NodeType type)
+    {
+        return type switch
+        {
+            NodeType.Combat => "Fight normal enemies.\nReward: Dice or Perk",
+            NodeType.Elite => "Fight a powerful elite enemy.\nReward: Relic",
+            NodeType.Shop => "Purchase items, dice, and upgrades.\nCost: Gold",
+            NodeType.Campfire => "Rest and heal.\nRestore HP or upgrade dice.",
+            NodeType.Event => "Encounter a random event.\nRisk and reward!",
+            NodeType.Boss => "Face a mighty boss!\nReward: Skill Point",
+            NodeType.Reward => "Claim your rewards!",
+            _ => "A mysterious node..."
+        };
     }
 
     private void EnsureTooltipInstance()
@@ -181,16 +428,6 @@ public class TooltipManager : MonoBehaviour
         // For now, let's just ensure it doesn't go off screen if parent is the canvas.
         
         tooltip.localPosition = pos;
-    }
-
-    public void ShowMergePreview(Dice currentDice, int nextLevel, Vector3 worldPosition)
-    {
-        EnsureTooltipInstance();
-        if (tooltipInstance == null) return;
-
-        SetTooltipPosition(worldPosition);
-        tooltipInstance.SetMergePreview(currentDice, nextLevel);
-        tooltipInstance.gameObject.SetActive(true);
     }
 
     public void HideTooltip()

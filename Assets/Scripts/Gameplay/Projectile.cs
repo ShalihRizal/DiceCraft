@@ -26,6 +26,9 @@ public class Projectile : MonoBehaviour
     public Vector3 direction = Vector3.up;
     public bool validToDamage = true;
 
+    [Header("Source")]
+    public Dice sourceDice;
+
     void Update()
     {
         if (owner == ProjectileOwner.Player && isHoming)
@@ -107,9 +110,6 @@ public class Projectile : MonoBehaviour
         }
     }
 
-    [Header("Source")]
-    public Dice sourceDice;
-
     void HandlePlayerProjectileCollision(Collider2D other)
     {
         // Ignore collision with Player
@@ -123,38 +123,29 @@ public class Projectile : MonoBehaviour
             float damageDealt = damage;
             hitEnemy.TakeDamage(damageDealt);
 
-            // 💥 Trigger OnEnemyHit for Source Dice
+            // Trigger OnEnemyHit for Source Dice
             if (sourceDice != null && sourceDice.diceData != null && sourceDice.diceData.passive != null)
             {
                 sourceDice.diceData.passive.OnEnemyHit(sourceDice, hitEnemy, ref damageDealt);
             }
 
-            // 💥 Trigger OnEnemyHit for Neighbors (if they have passives that care)
+            // Trigger OnNeighborHit for Neighbors
             if (sourceDice != null)
             {
                 foreach (var neighbor in sourceDice.GetNeighbors())
                 {
-                    // neighbor.diceData?.passive?.OnNeighborHit(neighbor, sourceDice, hitEnemy, ref damageDealt); // If we had OnNeighborHit
+                    neighbor.diceData?.passive?.OnNeighborHit(neighbor, hitEnemy, ref damageDealt);
                 }
             }
 
-            // 💥 Spawn hit effect
+            // Spawn hit effect
             if (hitEffectPrefab != null)
             {
                 Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
             }
 
-            gameObject.SetActive(false); // Return to pool (or destroy if instantiated)
-             // Note: If instantiated, SetActive(false) won't destroy it. 
-             // But ObjectPooler handles SetActive(false). 
-             // If Dice instantiates directly, we might need to Destroy.
-             // However, Dice.cs currently Instantiates. We should probably use ObjectPooler for Dice too eventually,
-             // but for now, let's check if it came from pool? 
-             // Actually, if we just SetActive(false), it will leak if not pooled.
-             // But let's assume we want to Destroy if not pooled? 
-             // For now, let's just Destroy if it's a Player projectile instantiated by Dice (which doesn't use pool yet).
-             // Wait, Dice.cs DOES NOT use pool. So we must Destroy.
-             Destroy(gameObject); 
+            gameObject.SetActive(false);
+            Destroy(gameObject); 
         }
     }
 }

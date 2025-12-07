@@ -15,8 +15,12 @@ public class SettingsManager : MonoBehaviour
 
     private Resolution[] resolutions;
 
-    void OnEnable()
+    void Start()
     {
+        // Hide settings panel by default
+        if (settingsPanel != null)
+            settingsPanel.SetActive(false);
+
         SetupResolutionDropdown();
         SetupQualityDropdown();
         LoadSettings();
@@ -26,30 +30,19 @@ public class SettingsManager : MonoBehaviour
     {
         if (resolutionDropdown == null) return;
 
-        // Hardcoded resolutions as requested
-        resolutions = new Resolution[2];
-        
-        resolutions[0] = new Resolution();
-        resolutions[0].width = 2560;
-        resolutions[0].height = 1440;
-        
-        resolutions[1] = new Resolution();
-        resolutions[1].width = 1920;
-        resolutions[1].height = 1080;
-
+        resolutions = Screen.resolutions;
         resolutionDropdown.ClearOptions();
 
         List<string> options = new List<string>();
-        int currentResolutionIndex = 0; // Default to 2560x1440
+        int currentResolutionIndex = 0;
 
         for (int i = 0; i < resolutions.Length; i++)
         {
             string option = resolutions[i].width + " x " + resolutions[i].height;
             options.Add(option);
 
-            // Check if this matches current screen resolution
-            if (resolutions[i].width == Screen.width &&
-                resolutions[i].height == Screen.height)
+            if (resolutions[i].width == Screen.currentResolution.width &&
+                resolutions[i].height == Screen.currentResolution.height)
             {
                 currentResolutionIndex = i;
             }

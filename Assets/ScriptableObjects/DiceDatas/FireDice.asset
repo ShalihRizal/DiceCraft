@@ -25,8 +25,9 @@ MonoBehaviour:
   prefab: {fileID: 4223228544291816483, guid: 728903fb0cdc97d45a43400c42dd604b, type: 3}
   rarity: 0
   sides: 6
-  baseDamage: 15
-  baseFireInterval: 1
+  baseDamage: 10
+  baseFireInterval: 2
+  projectileSpeed: 10
   cost: 150
   luck: 0
   diceCritChance: 0

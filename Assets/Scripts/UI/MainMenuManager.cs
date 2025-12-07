@@ -5,40 +5,24 @@ public class MainMenuManager : MonoBehaviour
 {
     public void StartGame()
     {
-        // Load the main game scene
-        SceneManager.LoadScene("GameplayScene");
+        // Load the main game scene (assuming it's called "Game" or index 1)
+        SceneManager.LoadScene("Game");
     }
-
-    public SettingsManager settingsManager;
 
     public void OpenSettings()
     {
         // Show settings panel
+        SettingsManager settingsManager = FindFirstObjectByType<SettingsManager>();
         if (settingsManager != null)
         {
             settingsManager.ShowSettings();
         }
-        else
-        {
-            // Fallback if not assigned
-            var sm = FindFirstObjectByType<SettingsManager>(FindObjectsInactive.Include);
-            if (sm != null) sm.ShowSettings();
-        }
     }
-
-    public AchievementListUI achievementListUI;
 
     public void OpenAchievements()
     {
-        if (achievementListUI != null)
-        {
-            achievementListUI.gameObject.SetActive(true);
-            achievementListUI.RefreshList();
-        }
-        else
-        {
-            Debug.LogWarning("AchievementListUI not assigned in MainMenuManager");
-        }
+        // Placeholder for achievements
+        Debug.Log("Achievements panel opened (not yet implemented)");
     }
 
     public void QuitGame()

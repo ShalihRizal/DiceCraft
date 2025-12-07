@@ -1,12 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
-using TMPro;
 
 public class RelicListUI : MonoBehaviour
 {
     public GameObject relicIconPrefab;
     public Transform container;
-    public TextMeshProUGUI relicCounterText; // Optional: "3/20 Relics"
 
     private void Start()
     {
@@ -21,8 +19,6 @@ public class RelicListUI : MonoBehaviour
                 AddRelicIcon(relic);
             }
         }
-
-        UpdateCounter();
     }
 
     private void OnDestroy()
@@ -39,17 +35,6 @@ public class RelicListUI : MonoBehaviour
         if (iconUI != null)
         {
             iconUI.Setup(relic);
-        }
-
-        UpdateCounter();
-    }
-
-    private void UpdateCounter()
-    {
-        if (relicCounterText != null && RelicManager.Instance != null)
-        {
-            int count = RelicManager.Instance.collectedRelics.Count;
-            relicCounterText.text = $"{count} Relics";
         }
     }
 }

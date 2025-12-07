@@ -138,10 +138,17 @@ public class PlayerHealth : MonoBehaviour
         if (percentageText != null)
         {
             int endValue = Mathf.RoundToInt(healthRatio * 100f);
+            
+            // Show Current / Max instead of percentage
+            percentageText.text = $"{Mathf.CeilToInt(currentHealth)} / {Mathf.CeilToInt(maxHealth)}";
+            
+            // Optional: DOTween effect for numbers? (Simplifying to direct text update for now to avoid parsing errors)
+            /*
             DOTween.To(() => int.Parse(percentageText.text.Replace("%", "")), x =>
             {
                 percentageText.text = $"{x}%";
             }, endValue, 0.3f).SetEase(Ease.OutQuad);
+            */
         }
     }
 

@@ -114,24 +114,40 @@ public class GameSetupTool : EditorWindow
             }
         }
 
-        // 4. Setup Default Wave if empty
-        if (enemySpawner != null && enemySpawner.waves.Count == 0)
+        // 4. Setup Enemy Pool if empty
+        if (enemySpawner != null && enemySpawner.randomEnemyPool.Count == 0)
         {
-            GameObject enemyPrefab = FindPrefab("Enemy");
-            if (enemyPrefab != null)
+            // Try to find EnemyData assets
+            string[] guids = AssetDatabase.FindAssets("t:EnemyData");
+            if (guids.Length > 0)
             {
-                WaveConfig defaultWave = new WaveConfig
+                foreach (string guid in guids)
                 {
-                    enemyPrefab = enemyPrefab,
-                    count = 5
-                };
-                enemySpawner.waves.Add(defaultWave);
-                Debug.Log($"🔗 Added Default Wave with Enemy: {enemyPrefab.name}");
+                    string path = AssetDatabase.GUIDToAssetPath(guid);
+                    EnemyData enemyData = AssetDatabase.LoadAssetAtPath<EnemyData>(path);
+                    if (enemyData != null)
+                    {
+                        enemySpawner.randomEnemyPool.Add(enemyData);
+                    }
+                }
+                Debug.Log($"🔗 Added {enemySpawner.randomEnemyPool.Count} enemies to pool");
                 EditorUtility.SetDirty(enemySpawner);
             }
             else
             {
-                Debug.LogWarning("⚠️ Could not find a prefab named 'Enemy' to create a default wave!");
+                Debug.LogWarning("⚠️ No EnemyData assets found! Create some first.");
+            }
+        }
+
+        // Assign enemy prefab if missing
+        if (enemySpawner != null && enemySpawner.enemyPrefab == null)
+        {
+            GameObject enemyPrefab = FindPrefab("Enemy");
+            if (enemyPrefab != null)
+            {
+                enemySpawner.enemyPrefab = enemyPrefab;
+                Debug.Log($"🔗 Assigned Enemy Prefab: {enemyPrefab.name}");
+                EditorUtility.SetDirty(enemySpawner);
             }
         }
     }
@@ -200,7 +216,10 @@ public class GameSetupTool : EditorWindow
         var spawner = FindFirstObjectByType<EnemySpawner>();
         if (spawner != null)
         {
-            if (spawner.waves.Count == 0) Debug.LogWarning("⚠️ EnemySpawner has no waves configured!");
+            if (spawner.randomEnemyPool.Count == 0) 
+                Debug.LogWarning("⚠️ EnemySpawner has no enemies in pool!");
+            if (spawner.enemyPrefab == null)
+                Debug.LogWarning("⚠️ EnemySpawner has no enemy prefab assigned!");
         }
     }
 

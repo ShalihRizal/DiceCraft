@@ -27,9 +27,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     public void SetDice(RuntimeDiceData dice)
     {
         currentDice = dice;
-        int spriteIndex = dice.upgradeLevel - 1; // Convert to 0-based index
-        if (spriteIndex >= 0 && spriteIndex < dice.baseData.upgradeSprites.Length)
-            icon.sprite = dice.baseData.upgradeSprites[spriteIndex];
+        if (dice.baseData.upgradeSprites.Length > dice.upgradeLevel)
+            icon.sprite = dice.baseData.upgradeSprites[dice.upgradeLevel];
         else if (dice.baseData.upgradeSprites.Length > 0)
             icon.sprite = dice.baseData.upgradeSprites[0]; // Fallback
         else
@@ -238,9 +237,8 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                             {
                                 newDice.runtimeStats = currentDice; // Transfer stats (level, etc.)
                                 // Update sprite
-                                int spriteIndex = newDice.runtimeStats.upgradeLevel - 1;
-                                if (spriteIndex >= 0 && spriteIndex < newDice.diceData.upgradeSprites.Length)
-                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[spriteIndex];
+                                if (newDice.diceData.upgradeSprites.Length > newDice.runtimeStats.upgradeLevel)
+                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[newDice.runtimeStats.upgradeLevel];
                             }
                             
                             InventoryManager.Instance.RemoveDiceAt(slotIndex);
@@ -299,22 +297,20 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                             if (newDice != null)
                             {
                                 newDice.runtimeStats = currentDice;
-                                int spriteIndex = newDice.runtimeStats.upgradeLevel - 1;
-                                if (spriteIndex >= 0 && spriteIndex < newDice.diceData.upgradeSprites.Length)
-                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[spriteIndex];
+                                if (newDice.diceData.upgradeSprites.Length > newDice.runtimeStats.upgradeLevel)
+                                    newDice.GetComponent<SpriteRenderer>().sprite = newDice.diceData.upgradeSprites[newDice.runtimeStats.upgradeLevel];
                             }
                             InventoryManager.Instance.RemoveDiceAt(slotIndex);
                         }
                         else
                         {
-                            // Duplicate Merge Logic
+                            // Duplicate Merge Logic (Refactor if possible, but inline is fine for now)
                             Dice diceOnBoard = bestCell.GetComponentInChildren<Dice>();
                             if (diceOnBoard != null && diceOnBoard.diceData == currentDice.baseData && diceOnBoard.runtimeStats.upgradeLevel == currentDice.upgradeLevel)
                             {
                                 diceOnBoard.runtimeStats.upgradeLevel++;
-                                int spriteIndex = diceOnBoard.runtimeStats.upgradeLevel - 1;
-                                if (spriteIndex >= 0 && spriteIndex < diceOnBoard.diceData.upgradeSprites.Length)
-                                    diceOnBoard.GetComponent<SpriteRenderer>().sprite = diceOnBoard.diceData.upgradeSprites[spriteIndex];
+                                if (diceOnBoard.diceData.upgradeSprites.Length > diceOnBoard.runtimeStats.upgradeLevel)
+                                    diceOnBoard.GetComponent<SpriteRenderer>().sprite = diceOnBoard.diceData.upgradeSprites[diceOnBoard.runtimeStats.upgradeLevel];
                                 
                                 diceOnBoard.PlayVFX(VFXType.Merge);
                                 GameEvents.RaiseDiceMerged(null, diceOnBoard);

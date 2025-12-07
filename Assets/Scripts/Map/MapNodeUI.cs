@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class MapNodeUI : MonoBehaviour, IPointerClickHandler
+public class MapNodeUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public Image hexImage; // The background hex
     public Image typeIcon; // The icon on top
@@ -84,6 +84,22 @@ public class MapNodeUI : MonoBehaviour, IPointerClickHandler
         if (node.isAvailable && !node.isLocked)
         {
             mapUI.OnNodeClicked(node);
+        }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (node != null && TooltipManager.Instance != null)
+        {
+            TooltipManager.Instance.ShowTooltip(node, transform.position);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (TooltipManager.Instance != null)
+        {
+            TooltipManager.Instance.HideTooltip();
         }
     }
 }
