@@ -7,10 +7,11 @@ public class RuntimeDiceData
 
     public float fireInterval;
     public float baseDamage;
+    public float projectileSpeed;
     public int diceSides;
     public int cost;
     public string diceName;
-    public int upgradeLevel = 1;
+    public int upgradeLevel = 0;
 
     public float luck;
 
@@ -29,6 +30,7 @@ public class RuntimeDiceData
         // assign to the instance field (previous code shadowed 'luck')
         luck = data.luck / 100f;
         critChance = data.diceCritChance;
+        projectileSpeed = data.projectileSpeed;
         multicastChance = Mathf.Clamp01(luck * 0.25f);
     }
 }

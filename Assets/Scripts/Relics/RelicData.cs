@@ -1,12 +1,9 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public enum RelicRarity
 {
     Common,
-    Uncommon,
     Rare,
-    Epic,
     Legendary
 }
 
@@ -30,54 +27,68 @@ public class RelicData : ScriptableObject
     public int cost = 100;
     
     [Header("Effect Logic")]
-    public RelicTrigger trigger;
-    public RelicEffect effect;
-    public float baseValue; // Base value at level 1
-    public float valuePerLevel; // Increase per level
-    
-    [Header("Dice-Specific Effects")]
-    public DiceData targetDiceData; // Reference to the specific dice this relic affects
-    
-    [Header("Upgrade System")]
-    public int maxLevel = 1;
-    public int currentLevel = 1;
-    public List<Sprite> upgradeIcons; // Optional: Icons for each level
+    public RelicEffectType effectType;
+    public float effectValue; // Generic value for the effect (e.g., +10% damage, +5 gold)
 
-    public float GetCurrentValue()
+    public string GetDescription()
     {
-        return baseValue + (valuePerLevel * (currentLevel - 1));
-    }
+        string processedDesc = description;
+        
+        // Matches {VariableName} or {VariableName:F2}
+        var matches = System.Text.RegularExpressions.Regex.Matches(processedDesc, @"\{(\w+)(?::([^\}]+))?\}");
 
-    public void Upgrade()
-    {
-        if (currentLevel < maxLevel)
+        foreach (System.Text.RegularExpressions.Match match in matches)
         {
-            currentLevel++;
-            // Update icon if available
-            if (upgradeIcons != null && upgradeIcons.Count >= currentLevel)
+            string fullTag = match.Value;
+            string fieldName = match.Groups[1].Value;
+            string format = match.Groups[2].Success ? match.Groups[2].Value : null;
+
+            System.Reflection.FieldInfo field = this.GetType().GetField(fieldName, 
+                System.Reflection.BindingFlags.Public | 
+                System.Reflection.BindingFlags.Instance | 
+                System.Reflection.BindingFlags.NonPublic | 
+                System.Reflection.BindingFlags.IgnoreCase);
+
+            if (field != null)
             {
-                icon = upgradeIcons[currentLevel - 1];
+                object val = field.GetValue(this);
+                string replacement = val != null ? val.ToString() : "null";
+
+                if (val is System.Enum)
+                {
+                    // Prettify Enum: "OnDamaged" -> "On Damaged"
+                    replacement = System.Text.RegularExpressions.Regex.Replace(val.ToString(), "(\\B[A-Z])", " $1");
+                }
+                else if (!string.IsNullOrEmpty(format) && val is System.IFormattable formattable)
+                {
+                    replacement = formattable.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+                }
+
+                processedDesc = processedDesc.Replace(fullTag, replacement);
+            }
+            else
+            {
+                // Try Property
+                System.Reflection.PropertyInfo prop = this.GetType().GetProperty(fieldName,
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.NonPublic | 
+                    System.Reflection.BindingFlags.IgnoreCase);
+
+                if (prop != null)
+                {
+                    object val = prop.GetValue(this);
+                    string replacement = val != null ? val.ToString() : "null";
+                    
+                    if (!string.IsNullOrEmpty(format) && val is System.IFormattable formattable)
+                    {
+                        replacement = formattable.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+                    }
+                    processedDesc = processedDesc.Replace(fullTag, replacement);
+                }
             }
         }
+
+        return processedDesc;
     }
-}
-
-public enum RelicTrigger
-{
-    Passive,
-    OnCombatStart,
-    OnTurnStart,
-    OnKill,
-    OnDiceMerge
-}
-
-public enum RelicEffect
-{
-    None,
-    Heal,
-    GainGold,
-    DamageMultiplier,
-    MaxHealth,
-    CritChance,
-    DicePassiveBoost // Boosts a specific dice type's passive
 }

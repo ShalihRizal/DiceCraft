@@ -9,31 +9,20 @@ public class HealPassive : DicePassive
     {
         skipProjectile = true; // Don't shoot bullet
 
-        // Get scaled heal amount based on level
-        int level = owner != null && owner.runtimeStats != null ? owner.runtimeStats.upgradeLevel : 1;
-        float scaledHeal = GetScaledValue(level);
-        if (scaledHeal == 0f) scaledHeal = healAmount; // Fallback to default
-        
         // Find Player Health
-        var playerHealth = FindFirstObjectByType<PlayerHealth>();
+        // Assuming GameManager or Player singleton has health
+        // For now, let's look for a PlayerHealth component
+        var playerHealth = FindFirstObjectByType<PlayerHealth>(); // Need to verify this class exists
         if (playerHealth != null)
         {
-            playerHealth.Heal(scaledHeal);
-            owner.SpawnFloatingText(scaledHeal, false, false, true, false);
-            Debug.Log($"💚 Healed Player for {scaledHeal}");
+            playerHealth.Heal(healAmount);
+            owner.SpawnFloatingText(healAmount, false, false, true, false);
+            Debug.Log($"💚 Healed Player for {healAmount}");
         }
         else
         {
+            // Fallback if no PlayerHealth script found yet (might need to create it)
             Debug.LogWarning("HealPassive: No PlayerHealth found!");
         }
-    }
-
-    public override string GetFormattedDescription(Dice owner)
-    {
-        int level = owner != null && owner.runtimeStats != null ? owner.runtimeStats.upgradeLevel : 1;
-        float scaledHeal = GetScaledValue(level);
-        if (scaledHeal == 0f) scaledHeal = healAmount; // Fallback
-        
-        return $"Heals {scaledHeal} HP instead of dealing damage.";
     }
 }

@@ -71,57 +71,15 @@ public class DiceDrag : MonoBehaviour
             }
         }
 
-        if (nearestDice != null)
-        {
-            if (nearestDice != currentHighlightedDice)
-            {
-                ClearHighlight();
-                HighlightDice(nearestDice);
-            }
-            
-            // Always update tooltip based on merge status
-            if (CanMergeWith(nearestDice))
-            {
-                int nextLevel = (nearestDice.diceScript?.runtimeStats?.upgradeLevel ?? 1) + 1;
-                if (TooltipManager.Instance != null && nearestDice.diceScript != null)
-                {
-                    TooltipManager.Instance.ShowMergePreview(
-                        nearestDice.diceScript, 
-                        nextLevel, 
-                        nearestDice.transform.position
-                    );
-                }
-            }
-            else
-            {
-                // Hide tooltip if dice is not mergeable
-                if (TooltipManager.Instance != null)
-                {
-                    TooltipManager.Instance.HideTooltip();
-                }
-            }
-        }
-        else
+        if (nearestDice != null && nearestDice != currentHighlightedDice)
         {
             ClearHighlight();
-            if (TooltipManager.Instance != null)
-            {
-                TooltipManager.Instance.HideTooltip();
-            }
+            HighlightDice(nearestDice);
         }
-    }
-
-    private bool CanMergeWith(DiceDrag otherDice)
-    {
-        if (diceScript == null || otherDice == null || otherDice.diceScript == null) return false;
-        
-        int myLevel = diceScript?.runtimeStats?.upgradeLevel ?? 0;
-        int otherLevel = otherDice.diceScript?.runtimeStats?.upgradeLevel ?? 0;
-        int otherMax = otherDice.diceScript?.diceData?.maxUpgradeLevel ?? int.MaxValue;
-
-        return diceScript.diceData == otherDice.diceScript.diceData &&
-               myLevel == otherLevel &&
-               otherLevel < otherMax;
+        else if (nearestDice == null)
+        {
+            ClearHighlight();
+        }
     }
 
     void HighlightDice(DiceDrag dice)
@@ -146,13 +104,6 @@ public class DiceDrag : MonoBehaviour
         if (!isDragging) return;
 
         ClearHighlight();
-        
-        // Hide merge preview tooltip
-        if (TooltipManager.Instance != null)
-        {
-            TooltipManager.Instance.HideTooltip();
-        }
-        
         isDragging = false;
         if (spriteRenderer != null) spriteRenderer.sortingOrder = originalSortingOrder;
 
@@ -230,9 +181,8 @@ public class DiceDrag : MonoBehaviour
 
                             // Update sprite if available
                             int newLevel = otherDice.diceScript.runtimeStats.upgradeLevel;
-                            int spriteIndex = newLevel - 1; // Convert to 0-based index
-                            if (spriteIndex >= 0 && spriteIndex < otherDice.diceScript.diceData.upgradeSprites.Length)
-                                otherDice.spriteRenderer.sprite = otherDice.diceScript.diceData.upgradeSprites[spriteIndex];
+                            if (newLevel < otherDice.diceScript.diceData.upgradeSprites.Length)
+                                otherDice.spriteRenderer.sprite = otherDice.diceScript.diceData.upgradeSprites[newLevel];
 
                             // Trigger merge passives
                             diceScript.diceData.passive?.OnDiceMerged(diceScript, otherDice.diceScript);

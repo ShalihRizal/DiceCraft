@@ -63,11 +63,10 @@ public class RewardManager : MonoBehaviour
     public int rerollCost = 50;
 
     private RewardType currentRewardType;
-    private RelicRarity currentMinRarity = RelicRarity.Common;
 
-    public void GenerateRewards(RewardType type, RelicRarity minRarity = RelicRarity.Common)
+    public void GenerateRewards(RewardType type)
     {
-        Debug.Log($"🎁 RewardManager.GenerateRewards() called. Type = {type}, MinRarity = {minRarity}");
+        Debug.Log($"🎁 RewardManager.GenerateRewards() called. Setting IsRewardPhaseActive = true");
         
         // 🔥 Force hide any active tooltips from combat
         if (TooltipManager.Instance != null)
@@ -87,7 +86,6 @@ public class RewardManager : MonoBehaviour
         }
         
         currentRewardType = type;
-        currentMinRarity = minRarity;
         List<RewardOption> options = new List<RewardOption>();
 
         for (int i = 0; i < 3; i++)
@@ -98,59 +96,40 @@ public class RewardManager : MonoBehaviour
 
             if (type == RewardType.Dice)
             {
-                if (dicePool != null && dicePool.allDice != null && dicePool.allDice.Count > 0)
+                if (dicePool != null)
                 {
                     option.dice = dicePool.GetRandomDice();
                     if (option.dice != null)
                     {
                         option.description = option.dice.diceName;
-                        // option.icon = option.dice.icon;
+                        
+                        // Get icon from upgradeSprites or prefab
+                        if (option.dice.upgradeSprites != null && option.dice.upgradeSprites.Length > 0)
+                        {
+                            option.icon = option.dice.upgradeSprites[0];
+                        }
+                        else if (option.dice.prefab != null)
+                        {
+                            SpriteRenderer sr = option.dice.prefab.GetComponent<SpriteRenderer>();
+                            if (sr != null) option.icon = sr.sprite;
+                        }
+                        
                         isValid = true;
-                        Debug.Log($"✅ Generated Dice reward: {option.dice.diceName}");
                     }
-                    else
-                    {
-                        Debug.LogWarning($"⚠️ DicePool returned null dice!");
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"❌ DicePool is null or empty! Cannot generate Dice rewards.");
                 }
             }
             else if (type == RewardType.Relic)
             {
                 if (ShopManager.Instance != null && ShopManager.Instance.relicPool != null && ShopManager.Instance.relicPool.Count > 0)
                 {
-                    // Filter relics by minimum rarity
-                    var filteredPool = new System.Collections.Generic.List<RelicData>();
-                    foreach (var relic in ShopManager.Instance.relicPool)
+                    var pool = ShopManager.Instance.relicPool;
+                    option.relic = pool[Random.Range(0, pool.Count)];
+                    if (option.relic != null)
                     {
-                        if (relic != null && relic.rarity >= minRarity)
-                        {
-                            filteredPool.Add(relic);
-                        }
+                        option.description = option.relic.relicName;
+                        option.icon = option.relic.icon;
+                        isValid = true;
                     }
-                    
-                    if (filteredPool.Count > 0)
-                    {
-                        option.relic = filteredPool[Random.Range(0, filteredPool.Count)];
-                        if (option.relic != null)
-                        {
-                            option.description = option.relic.relicName;
-                            option.icon = option.relic.icon;
-                            isValid = true;
-                            Debug.Log($"✅ Generated Relic reward: {option.relic.relicName} (Rarity: {option.relic.rarity})");
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"⚠️ No relics found with rarity >= {minRarity}! Available relics: {ShopManager.Instance.relicPool.Count}");
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"❌ ShopManager or relicPool is null/empty! Cannot generate Relic rewards.");
                 }
             }
             else if (type == RewardType.Skill)
@@ -163,12 +142,7 @@ public class RewardManager : MonoBehaviour
                         option.description = option.perk.perkName;
                         option.icon = option.perk.icon;
                         isValid = true;
-                        Debug.Log($"✅ Generated Skill/Perk reward: {option.perk.perkName}");
                     }
-                }
-                else
-                {
-                    Debug.LogError($"❌ allPerks is null or empty! Cannot generate Skill rewards.");
                 }
             }
             
@@ -176,21 +150,11 @@ public class RewardManager : MonoBehaviour
             {
                 options.Add(option);
             }
-            else
-            {
-                Debug.LogWarning($"⚠️ Failed to generate valid reward option {i + 1} for type {type}");
-            }
         }
-
-        Debug.Log($"📦 Total rewards generated: {options.Count}/3");
 
         if (rewardUI != null)
         {
             rewardUI.ShowRewards(options, skipGoldReward, rerollCost);
-        }
-        else
-        {
-            Debug.LogError("❌ RewardUI is null! Cannot display rewards.");
         }
     }
 
@@ -257,7 +221,7 @@ public class RewardManager : MonoBehaviour
     {
         if (PlayerCurrency.Instance.SpendGold(rerollCost))
         {
-            GenerateRewards(currentRewardType, currentMinRarity);
+            GenerateRewards(currentRewardType);
         }
     }
 

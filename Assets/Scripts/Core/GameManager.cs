@@ -14,8 +14,8 @@ public class GameManager : MonoBehaviour
     private const int maxHoursPerDay = 10;
 
     [Header("Global Stats")]
-    public float globalDamageMultiplier = 0f;
-    public float globalFireRateMultiplier = 0f;
+    public float globalDamageMultiplier = 1f;
+    public float globalFireRateMultiplier = 1f;
     public float globalCritChance = 0f;
 
     public System.Collections.Generic.List<DicePassive> globalPassives = new System.Collections.Generic.List<DicePassive>();
@@ -100,30 +100,16 @@ public class GameManager : MonoBehaviour
         // Trigger Reward Phase based on Node Type
         if (RewardManager.Instance != null)
         {
-            RewardManager.RewardType rewardType = RewardManager.RewardType.Skill; // Default to Skills for Combat nodes
-            RelicRarity minRarity = RelicRarity.Common; // Default minimum rarity
+            RewardManager.RewardType rewardType = RewardManager.RewardType.Dice; // Default
             
             if (MapManager.Instance != null && MapManager.Instance.currentNode != null)
             {
                 NodeType nodeType = MapManager.Instance.currentNode.nodeType;
-                if (nodeType == NodeType.Combat)
-                {
-                    rewardType = RewardManager.RewardType.Skill; // Perks for Combat
-                }
-                else if (nodeType == NodeType.Elite)
-                {
-                    rewardType = RewardManager.RewardType.Relic; // Relics for Elite (any rarity)
-                    minRarity = RelicRarity.Common;
-                }
-                else if (nodeType == NodeType.Boss)
-                {
-                    rewardType = RewardManager.RewardType.Relic; // Relics for Boss (Rare+ only)
-                    minRarity = RelicRarity.Rare;
-                }
+                if (nodeType == NodeType.Elite) rewardType = RewardManager.RewardType.Relic;
+                else if (nodeType == NodeType.Boss) rewardType = RewardManager.RewardType.Skill;
             }
             
-            Debug.Log($"🎁 EndCombat: NodeType = {MapManager.Instance?.currentNode?.nodeType}, RewardType = {rewardType}, MinRarity = {minRarity}");
-            RewardManager.Instance.GenerateRewards(rewardType, minRarity);
+            RewardManager.Instance.GenerateRewards(rewardType);
         }
         else
         {
@@ -139,7 +125,8 @@ public class GameManager : MonoBehaviour
         // Check if Map System is active
         if (MapManager.Instance != null && MapManager.Instance.currentMap != null)
         {
-            ShowMap();
+            // Complete the node (this scales difficulty for next combat)
+            MapManager.Instance.CompleteCurrentNode();
         }
         else
         {

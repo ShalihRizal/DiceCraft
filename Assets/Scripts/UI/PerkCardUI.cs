@@ -9,18 +9,6 @@ public class PerkCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI descText;
     public Button selectButton;
-    
-    [Header("Rarity Styling")]
-    public Image cardBackground; // Main background of the card
-    public Image cardBorder;     // Border/frame around the card
-    
-    [Header("Rarity Sprites")]
-    public Sprite commonSprite;
-    public Sprite uncommonSprite;  // For dice only
-    public Sprite rareSprite;
-    public Sprite epicSprite;      // For dice only
-    public Sprite legendarySprite;
-    public Sprite skillSprite;     // For perks/skills
 
     private RewardManager.RewardOption option;
 
@@ -47,75 +35,10 @@ public class PerkCardUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
             iconImage.enabled = option.icon != null;
         }
 
-        // Apply rarity-based styling
-        ApplyRarityStyle(option);
-
         if (selectButton != null)
         {
             selectButton.onClick.RemoveAllListeners();
             selectButton.onClick.AddListener(OnSelect);
-        }
-    }
-
-    private void ApplyRarityStyle(RewardManager.RewardOption option)
-    {
-        Sprite targetSprite = null;
-
-        // Determine which sprite to use based on rarity
-        if (option.type == RewardManager.RewardType.Relic && option.relic != null)
-        {
-            // Relics use Common, Rare, or Legendary
-            switch (option.relic.rarity)
-            {
-                case RelicRarity.Common:
-                    targetSprite = commonSprite;
-                    break;
-                case RelicRarity.Rare:
-                    targetSprite = rareSprite;
-                    break;
-                case RelicRarity.Legendary:
-                    targetSprite = legendarySprite;
-                    break;
-            }
-        }
-        else if (option.type == RewardManager.RewardType.Dice && option.dice != null)
-        {
-            // Dice use all 5 rarities
-            switch (option.dice.rarity)
-            {
-                case DiceRarity.Common:
-                    targetSprite = commonSprite;
-                    break;
-                case DiceRarity.Uncommon:
-                    targetSprite = uncommonSprite;
-                    break;
-                case DiceRarity.Rare:
-                    targetSprite = rareSprite;
-                    break;
-                case DiceRarity.Epic:
-                    targetSprite = epicSprite;
-                    break;
-                case DiceRarity.Legendary:
-                    targetSprite = legendarySprite;
-                    break;
-            }
-        }
-        else if (option.type == RewardManager.RewardType.Skill)
-        {
-            targetSprite = skillSprite;
-        }
-
-        // Apply the sprite to both background and border (or just one, depending on your design)
-        if (cardBackground != null && targetSprite != null)
-        {
-            cardBackground.sprite = targetSprite;
-            cardBackground.color = Color.white; // Reset color to show sprite properly
-        }
-
-        if (cardBorder != null && targetSprite != null)
-        {
-            cardBorder.sprite = targetSprite;
-            cardBorder.color = Color.white; // Reset color to show sprite properly
         }
     }
 

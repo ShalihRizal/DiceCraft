@@ -24,27 +24,74 @@ public class DicePassive : ScriptableObject
     public string description = "Describe what this passive does.";
     public Sprite icon;
 
+    public virtual string GetDescription()
+    {
+        string processedDesc = description;
+        
+        // Matches {VariableName} or {VariableName:F2}
+        var matches = System.Text.RegularExpressions.Regex.Matches(processedDesc, @"\{(\w+)(?::([^\}]+))?\}");
+
+        foreach (System.Text.RegularExpressions.Match match in matches)
+        {
+            string fullTag = match.Value;
+            string fieldName = match.Groups[1].Value;
+            string format = match.Groups[2].Success ? match.Groups[2].Value : null;
+
+            System.Reflection.FieldInfo field = this.GetType().GetField(fieldName, 
+                System.Reflection.BindingFlags.Public | 
+                System.Reflection.BindingFlags.Instance | 
+                System.Reflection.BindingFlags.NonPublic | 
+                System.Reflection.BindingFlags.IgnoreCase);
+
+            if (field != null)
+            {
+                object val = field.GetValue(this);
+                string replacement = val != null ? val.ToString() : "null";
+
+                if (val is System.Enum)
+                {
+                    // Prettify Enum: "OnDamaged" -> "On Damaged"
+                    replacement = System.Text.RegularExpressions.Regex.Replace(val.ToString(), "(\\B[A-Z])", " $1");
+                }
+                else if (!string.IsNullOrEmpty(format) && val is System.IFormattable formattable)
+                {
+                    replacement = formattable.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+                }
+
+                processedDesc = processedDesc.Replace(fullTag, replacement);
+            }
+            else
+            {
+                // Try Property
+                System.Reflection.PropertyInfo prop = this.GetType().GetProperty(fieldName,
+                    System.Reflection.BindingFlags.Public |
+                    System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.NonPublic | 
+                    System.Reflection.BindingFlags.IgnoreCase);
+
+                if (prop != null)
+                {
+                    object val = prop.GetValue(this);
+                    string replacement = val != null ? val.ToString() : "null";
+                    
+                    if (!string.IsNullOrEmpty(format) && val is System.IFormattable formattable)
+                    {
+                        replacement = formattable.ToString(format, System.Globalization.CultureInfo.InvariantCulture);
+                    }
+                    processedDesc = processedDesc.Replace(fullTag, replacement);
+                }
+            }
+        }
+
+        return processedDesc;
+    }
+
     [Header("Trigger Settings")]
     public PassiveTriggerType triggerEvents = PassiveTriggerType.OnDiceFire;
 
     [Header("Optional Settings")]
     public float duration = 0f;
     public float cooldown = 0f;
-
-    [Header("Passive Scaling")]
-    [Tooltip("Base value at level 1")]
-    public float baseValue = 0f;
-    [Tooltip("How much the value increases per level")]
-    public float valuePerLevel = 0f;
-
-    /// <summary>
-    /// Get the scaled value for this passive based on dice level
-    /// </summary>
-    public float GetScaledValue(int level)
-    {
-        if (baseValue == 0f && valuePerLevel == 0f) return 0f;
-        return baseValue + (valuePerLevel * (level - 1));
-    }
 
     // =========================
     // 🔹 Core Dice Lifecycle
@@ -110,6 +157,12 @@ public class DicePassive : ScriptableObject
         // Override to react to neighbor removal
     }
 
+    public virtual void OnNeighborHit(Dice owner, Enemy enemy, ref float damageDealt)
+    {
+        // Override to react when a neighbor hits an enemy
+        // Useful for passives that trigger on ally attacks
+    }
+
     public virtual System.Collections.Generic.List<Dice> GetAffectedNeighbors(Dice owner)
     {
         // Default: Affects NO neighbors (Override in specific passives like Anemo)
@@ -126,15 +179,6 @@ public class DicePassive : ScriptableObject
     public virtual float GetProjectedDamageMultiplier(Dice owner)
     {
         return 1f; // Default: no modification
-    }
-
-    /// <summary>
-    /// Returns a formatted description with actual numbers for tooltip display.
-    /// Override this in passives to show specific values.
-    /// </summary>
-    public virtual string GetFormattedDescription(Dice owner)
-    {
-        return description; // Default: return static description
     }
 
     // =========================
