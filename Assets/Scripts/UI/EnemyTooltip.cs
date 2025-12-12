@@ -40,12 +40,12 @@ public class EnemyTooltip : MonoBehaviour
         // Stats
         if (healthText != null)
         {
-            healthText.text = $"HP: {Mathf.CeilToInt(enemy.health)} / {Mathf.CeilToInt(data.maxHealth)}";
+            healthText.text = $"HP: {NumberFormatter.FormatHP(enemy.health)} / {NumberFormatter.FormatHP(data.maxHealth)}";
         }
 
         if (damageText != null)
         {
-            damageText.text = $"Damage: {data.damage}";
+            damageText.text = $"Damage: {NumberFormatter.FormatNumber(data.damage)}";
         }
 
         if (attackSpeedText != null)

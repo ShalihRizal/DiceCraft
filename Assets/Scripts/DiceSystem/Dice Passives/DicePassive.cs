@@ -139,6 +139,12 @@ public class DicePassive : ScriptableObject
         DebugTrigger(owner, "OnCombatEnd");
     }
 
+    public virtual void OnSwap(Dice thisDice, Dice otherDice)
+    {
+        // Override in specific passives like Joker
+        // Called when this dice is swapped with another dice
+    }
+
     // =========================
     // 🔹 Adjacency Events
     // =========================

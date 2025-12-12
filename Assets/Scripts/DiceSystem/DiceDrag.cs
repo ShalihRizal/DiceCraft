@@ -9,14 +9,14 @@ public class DiceDrag : MonoBehaviour
     private Vector3 originalPosition;
     private bool isDragging = false;
     private bool isOverTrashZone = false;
-    private Transform parentCell;
+    public Transform parentCell; // Made public for InventorySlot access
     public SpriteRenderer spriteRenderer;
     private Color originalColor;
     private DiceDrag currentHighlightedDice;
     private int originalSortingOrder;
     public Vector3 originalScale;
 
-    private Dice diceScript;
+    public Dice diceScript; // Made public for InventorySlot access
 
     public GameObject dropEffectPrefab;
     public GameObject mergeEffectPrefab;
@@ -256,6 +256,10 @@ public class DiceDrag : MonoBehaviour
                             // 🔄 Notify Dice of Move
                             diceScript.OnMove(myOldPos);
                             otherDice.diceScript.OnMove(otherOldPos);
+
+                            // 🃏 Trigger OnSwap passives (for Joker dice)
+                            diceScript.diceData?.passive?.OnSwap(diceScript, otherDice.diceScript);
+                            otherDice.diceScript.diceData?.passive?.OnSwap(otherDice.diceScript, diceScript);
 
                             mergeOrSwapOccurred = true;
                             break;

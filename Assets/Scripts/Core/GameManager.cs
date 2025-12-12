@@ -148,6 +148,60 @@ public class GameManager : MonoBehaviour
         if (mergedInto.diceData != null)
             mergedInto.PlayVFX(VFXType.Merge);
 
+        // Increment Duplicator counter if player has it
+        if (RelicManager.Instance != null)
+        {
+            RelicManager.Instance.IncrementDuplicatorCounter();
+            
+            // Check if Duplicator is ready to trigger
+            if (RelicManager.Instance.IsDuplicatorReady())
+            {
+                Debug.Log("🪞 The Duplicator is ready! Creating duplicate dice...");
+                
+                // Create RuntimeDiceData with the merged dice's level
+                RuntimeDiceData duplicateData = new RuntimeDiceData(mergedInto.diceData);
+                duplicateData.upgradeLevel = mergedInto.runtimeStats.upgradeLevel; // Copy the level
+                
+                bool duplicated = false;
+                
+                // Try to spawn on board first
+                DiceSpawner spawner = FindFirstObjectByType<DiceSpawner>();
+                if (spawner != null)
+                {
+                    Dice duplicatedDice = spawner.TrySpawnSpecificDice(mergedInto.diceData);
+                    
+                    if (duplicatedDice != null)
+                    {
+                        // Set the level to match merged dice
+                        duplicatedDice.runtimeStats.upgradeLevel = mergedInto.runtimeStats.upgradeLevel;
+                        duplicatedDice.UpdateVisuals(); // Update sprite to match level
+                        
+                        Debug.Log($"✨ Duplicated {mergedInto.diceData.diceName} Lv.{duplicatedDice.runtimeStats.upgradeLevel} on board!");
+                        duplicated = true;
+                    }
+                }
+                
+                // If board is full, try inventory
+                if (!duplicated && InventoryManager.Instance != null)
+                {
+                    if (InventoryManager.Instance.AddDice(duplicateData))
+                    {
+                        Debug.Log($"✨ Duplicated {mergedInto.diceData.diceName} Lv.{duplicateData.upgradeLevel} to inventory!");
+                        duplicated = true;
+                    }
+                }
+                
+                // If both board and inventory are full, skip and reset
+                if (!duplicated)
+                {
+                    Debug.LogWarning("⚠ Board and inventory are full! Duplicator effect skipped.");
+                }
+                
+                // Reset counter after use (or skip)
+                RelicManager.Instance.ResetDuplicatorCounter();
+            }
+        }
+
         // Global logic: e.g., track merges, achievements, unlocks
         TrackMerge(owner, mergedInto);
     }

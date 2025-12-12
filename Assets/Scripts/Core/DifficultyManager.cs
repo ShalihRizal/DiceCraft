@@ -9,11 +9,21 @@ public class DifficultyManager : MonoBehaviour
 {
     public static DifficultyManager Instance;
 
+    [Header("🎮 DIFFICULTY TWEAKING")]
+    [Tooltip("Reduce this to make the game easier (0.5 = half difficulty, 2.0 = double difficulty)")]
+    [Range(0.1f, 3.0f)]
+    public float globalDifficultyMultiplier = 1.0f;
+    
+    [Tooltip("Starting enemy level (lower = easier start)")]
+    [Range(1, 10)]
+    public int startingLevel = 1;
+
     [Header("Level System")]
     [Tooltip("Current enemy level (increases per node)")]
     public int currentLevel = 1;
     
-    [Tooltip("Levels gained per node completed")]
+    [Tooltip("Levels gained per node completed (lower = slower scaling)")]
+    [Range(1, 5)]
     public int levelsPerNode = 2;
 
     [Header("Multiplier Tables")]
@@ -46,6 +56,7 @@ public class DifficultyManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            currentLevel = startingLevel; // Use starting level
             InitializeDefaultCurves();
         }
         else
@@ -147,6 +158,10 @@ public class DifficultyManager : MonoBehaviour
         {
             currentATKMultiplier = 1f;
         }
+
+        // Apply global difficulty multiplier
+        currentHPMultiplier *= globalDifficultyMultiplier;
+        currentATKMultiplier *= globalDifficultyMultiplier;
         
         // Debug curve state if multiplier is seemingly stuck
         if (currentLevel > 1 && currentHPMultiplier == 1f)

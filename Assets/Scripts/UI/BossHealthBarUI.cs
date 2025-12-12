@@ -59,7 +59,7 @@ public class BossHealthBarUI : MonoBehaviour
 
         if (healthText != null)
         {
-            healthText.text = $"{Mathf.CeilToInt(currentHealth)} / {Mathf.CeilToInt(maxHealth)}";
+            healthText.text = $"{NumberFormatter.FormatHP(currentHealth)} / {NumberFormatter.FormatHP(maxHealth)}";
         }
     }
 

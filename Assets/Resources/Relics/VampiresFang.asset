@@ -14,14 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
   relicName: Vampire's Fang
   description: Heals 2 HP on enemy kill.
-  icon: {fileID: 0}
-  rarity: 2
+  icon: {fileID: 21300000, guid: e34728dfc009bf74f83ff61b3229ac21, type: 3}
+  rarity: 0
   cost: 150
-  trigger: 3
-  effect: 1
-  baseValue: 2
-  valuePerLevel: 1
-  targetDiceData: {fileID: 0}
-  maxLevel: 3
-  currentLevel: 1
-  upgradeIcons: []
+  effectType: 0
+  effectValue: 0

@@ -25,15 +25,9 @@ MonoBehaviour:
   prefab: {fileID: 4223228544291816483, guid: 728903fb0cdc97d45a43400c42dd604b, type: 3}
   rarity: 0
   sides: 6
-  damagePerLevel: []
-  fireIntervalPerLevel:
-  - 1
-  - 0.92
-  - 0.88
-  - 0.8
-  - 0.75
-  - 0.66
-  - 0.5
+  baseDamage: 0
+  baseFireInterval: 2
+  projectileSpeed: 10
   cost: 180
   luck: 0
   diceCritChance: 0
@@ -46,6 +40,6 @@ MonoBehaviour:
   vfxSold: {fileID: 0}
   vfxBought: {fileID: 0}
   vfxDrag: {fileID: 0}
-  vfxDrop: {fileID: 0}
+  vfxDrop: {fileID: 7831641614861014567, guid: 2d77fbee90734a9458a2a1dcb07b2a1e, type: 3}
   vfxMerge: {fileID: 0}
   vfxPassive: {fileID: 0}

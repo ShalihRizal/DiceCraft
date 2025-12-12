@@ -89,6 +89,23 @@ public class Dice : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Update visual sprite based on current upgrade level
+    /// </summary>
+    public void UpdateVisuals()
+    {
+        if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+        
+        if (diceData != null && diceData.upgradeSprites != null && diceData.upgradeSprites.Length > 0 && spriteRenderer != null)
+        {
+            int level = runtimeStats != null ? runtimeStats.upgradeLevel : 0;
+            if (level < diceData.upgradeSprites.Length)
+                spriteRenderer.sprite = diceData.upgradeSprites[level];
+            else
+                spriteRenderer.sprite = diceData.upgradeSprites[0];
+        }
+    }
+
     private void OnEnable()
     {
         GameEvents.OnCombatStarted += HandleCombatStart;
@@ -218,7 +235,25 @@ public class Dice : MonoBehaviour
 
         if (prefab != null)
         {
-            Instantiate(prefab, transform.position, Quaternion.identity);
+            // Debug.Log($"✨ Spawning VFX: {prefab.name} for {type}");
+            GameObject vfxObj = Instantiate(prefab, transform.position, Quaternion.identity);
+
+            // User Request: Make these play only once, except Idle
+            if (type != VFXType.Idle)
+            {
+                ParticleSystem ps = vfxObj.GetComponent<ParticleSystem>();
+                if (ps != null)
+                {
+                    var main = ps.main;
+                    main.loop = false; // Force play once
+                    Destroy(vfxObj, main.duration + main.startLifetime.constantMax + 0.1f);
+                }
+                else
+                {
+                    // Fallback for non-particle VFX: Destroy after 2 seconds
+                    Destroy(vfxObj, 2f); 
+                }
+            }
         }
     }
 

@@ -4,7 +4,9 @@ public enum RelicRarity
 {
     Common,
     Rare,
-    Legendary
+    Epic,
+    Legendary,
+    Mythic
 }
 
 public enum RelicEffectType

@@ -40,6 +40,6 @@ MonoBehaviour:
   vfxSold: {fileID: 0}
   vfxBought: {fileID: 0}
   vfxDrag: {fileID: 0}
-  vfxDrop: {fileID: 0}
+  vfxDrop: {fileID: 8640232128739289261, guid: 71f08f3455c8a5b46996dac41812cbf4, type: 3}
   vfxMerge: {fileID: 0}
   vfxPassive: {fileID: 0}

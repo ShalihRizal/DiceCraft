@@ -86,6 +86,12 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     currentDice.upgradeLevel++;
                     SetDice(currentDice); // Refresh UI
                     
+                    // 🪞 Increment Duplicator counter for inventory-to-inventory merge
+                    if (RelicManager.Instance != null)
+                    {
+                        RelicManager.Instance.IncrementDuplicatorCounter();
+                    }
+                    
                     // Remove source
                     InventoryManager.Instance.RemoveDiceAt(sourceSlot.slotIndex);
 
@@ -97,12 +103,41 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
         // Case 2: Dropped from Board (DiceDrag)
         DiceDrag diceDrag = droppedObj.GetComponent<DiceDrag>();
-        if (diceDrag != null)
+        if (diceDrag != null && diceDrag.diceScript != null)
         {
-            // Logic to move dice from board to inventory
-            // This requires DiceDrag to know about this slot or handle it here
-            // For now, let's just log
-
+            // Check if we can merge with current dice in this slot
+            if (currentDice != null && diceDrag.diceScript.diceData == currentDice.baseData && 
+                diceDrag.diceScript.runtimeStats.upgradeLevel == currentDice.upgradeLevel)
+            {
+                // Merge: Upgrade this inventory slot
+                currentDice.upgradeLevel++;
+                SetDice(currentDice); // Refresh UI
+                
+                // 🪞 Increment Duplicator counter for board-to-inventory merge
+                if (RelicManager.Instance != null)
+                {
+                    RelicManager.Instance.IncrementDuplicatorCounter();
+                }
+                
+                // Remove dice from board
+                DiceSpawner spawner = FindFirstObjectByType<DiceSpawner>();
+                if (spawner != null && diceDrag.parentCell != null)
+                {
+                    spawner.ReleaseCell(diceDrag.parentCell);
+                }
+                
+                // Destroy the board dice
+                if (diceDrag.diceScript != null)
+                {
+                    diceDrag.diceScript.NotifyRemoval(diceDrag.transform.position);
+                }
+                Destroy(diceDrag.gameObject);
+                
+                Debug.Log("✅ Merged board dice into inventory!");
+                return;
+            }
+            
+            // If no merge, just move to inventory (existing logic would handle this in DiceDrag)
         }
     }
 
@@ -166,6 +201,21 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             return;
         }
 
+        // 🗑️ Check if dropped on Trash Zone
+        if (eventData.hovered.Exists(g => g.GetComponent<TrashUI>() != null))
+        {
+            // Sell the dice for its actual cost
+            if (PlayerCurrency.Instance != null && currentDice != null && currentDice.baseData != null)
+            {
+                int sellValue = currentDice.baseData.cost;
+                PlayerCurrency.Instance.AddGold(sellValue);
+                Debug.Log($"💰 Sold {currentDice.baseData.diceName} for {sellValue} gold!");
+            }
+            
+            InventoryManager.Instance.RemoveDiceAt(slotIndex);
+            return;
+        }
+
         // Check if dropped on world
         if (!eventData.hovered.Exists(g => g.GetComponent<InventorySlot>() != null)) // If not hovering over another slot
         {
@@ -177,24 +227,10 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
             {
                 Transform nearestCell = spawner.GetNearestFreeCell(worldPos);
                 
-                // If GetNearestFreeCell returns null, it might be because all cells are occupied or too far.
-                // We need to check distance to ANY cell, not just free ones, to support merging.
-                // So let's find the nearest cell regardless of occupation.
-                
-                Transform bestCell = null;
-                float minDist = float.MaxValue;
-                // We need access to grid cells. DiceSpawner doesn't expose them publicly as a list, but we can iterate children of GridGenerator?
-                // Or we can rely on GetNearestFreeCell logic but modified.
-                // Since we can't easily modify DiceSpawner right now without reading it again (I did read it, it has private gridCells),
-                // I will use Physics2D to find the cell.
-                
+                // Use Physics2D to find the cell or dice at the drop position
                 Collider2D hit = Physics2D.OverlapPoint(worldPos);
                 if (hit != null)
                 {
-                    // Assuming cells have colliders or dice have colliders.
-                    // If we hit a dice, we get its parent cell.
-                    // If we hit a cell, we get the cell.
-                    
                     Transform targetCell = null;
                     if (hit.CompareTag("Dice"))
                     {
@@ -202,25 +238,15 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                     }
                     else 
                     {
-                        // Check if it's a cell (maybe by name or component?)
-                        // DiceSpawner creates cells. Let's assume they are the parents of dice or just empty objects.
-                        // Let's assume the grid cells have colliders?
-                        // If not, we might need to rely on distance check to all children of GridSpawner.
-                        if (spawner.gridGenerator != null)
-                        {
-                             foreach(Transform cell in spawner.gridGenerator.transform)
-                             {
-                                 float dist = Vector3.Distance(worldPos, cell.position);
-                                 if (dist < 1.0f && dist < minDist)
-                                 {
-                                     minDist = dist;
-                                     bestCell = cell;
-                                 }
-                             }
-                        }
+                        // Use DiceSpawner's GetNearestCell method
+                        targetCell = spawner.GetNearestCell(worldPos, 1.0f);
                     }
                     
-                    if (bestCell != null) targetCell = bestCell;
+                    if (targetCell == null)
+                    {
+                        // Fallback: use GetNearestCell
+                        targetCell = spawner.GetNearestCell(worldPos, 1.0f);
+                    }
 
                     if (targetCell != null)
                     {
@@ -264,6 +290,12 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                                     // VFX & Events
                                     diceOnBoard.PlayVFX(VFXType.Merge);
                                     GameEvents.RaiseDiceMerged(null, diceOnBoard); // Owner is null (from inventory)
+                                    
+                                    // 🪞 Increment Duplicator counter
+                                    if (RelicManager.Instance != null)
+                                    {
+                                        RelicManager.Instance.IncrementDuplicatorCounter();
+                                    }
 
                                     // Remove from Inventory
                                     InventoryManager.Instance.RemoveDiceAt(slotIndex);
@@ -276,18 +308,7 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                 else
                 {
                     // Fallback to distance check if Physics fail (e.g. no colliders on cells)
-                    if (spawner.gridGenerator != null)
-                    {
-                         foreach(Transform cell in spawner.gridGenerator.transform)
-                         {
-                             float dist = Vector3.Distance(worldPos, cell.position);
-                             if (dist < 1.0f && dist < minDist)
-                             {
-                                 minDist = dist;
-                                 bestCell = cell;
-                             }
-                         }
-                    }
+                    Transform bestCell = spawner.GetNearestCell(worldPos, 1.0f);
 
                     if (bestCell != null)
                     {
@@ -314,6 +335,13 @@ public class InventorySlot : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
                                 
                                 diceOnBoard.PlayVFX(VFXType.Merge);
                                 GameEvents.RaiseDiceMerged(null, diceOnBoard);
+                                
+                                // 🪞 Increment Duplicator counter
+                                if (RelicManager.Instance != null)
+                                {
+                                    RelicManager.Instance.IncrementDuplicatorCounter();
+                                }
+                                
                                 InventoryManager.Instance.RemoveDiceAt(slotIndex);
                                 Debug.Log("✅ Merged from Inventory (Distance Check)!");
                             }

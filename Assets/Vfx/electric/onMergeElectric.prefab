@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 185087532783400742}
   - component: {fileID: 1202715731928333581}
   - component: {fileID: 8161132065768808982}
-  - component: {fileID: -8559349675119816408}
   m_Layer: 0
   m_Name: onMergeElectric
   m_TagString: Untagged
@@ -118,16 +117,3 @@ VFXRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!114 &-8559349675119816408
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8129137485081867221}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18b3c2f42966f7547816dd52ce506810, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AutoDestroy
-  lifetime: 2

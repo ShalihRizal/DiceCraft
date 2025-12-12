@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9a4aaf9a0af1de844ba4ad2dbe32a541, type: 3}
-  m_Name: GamblersDice
+  m_Name: DuplicatorDice
   m_EditorClassIdentifier: Assembly-CSharp::RelicData
-  relicName: Gambler's Dice
-  description: Increases Critical Chance by 5%.
-  icon: {fileID: 21300000, guid: 9feeb46d872f14747a04c6a81da29596, type: 3}
-  rarity: 1
-  cost: 120
-  effectType: 0
+  relicName: Duplicator Dice
+  description: 
+  icon: {fileID: 0}
+  rarity: 4
+  cost: 100
+  effectType: 5
   effectValue: 0

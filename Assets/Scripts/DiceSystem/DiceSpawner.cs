@@ -179,4 +179,25 @@ public class DiceSpawner : MonoBehaviour
 
         return best;
     }
+
+    /// <summary>
+    /// Get nearest cell regardless of occupation status (for merging)
+    /// </summary>
+    public Transform GetNearestCell(Vector3 pos, float maxDistance = 1.0f)
+    {
+        Transform best = null;
+        float minDist = float.MaxValue;
+
+        foreach (var cell in gridCells)
+        {
+            float dist = Vector3.Distance(pos, cell.position);
+            if (dist < maxDistance && dist < minDist)
+            {
+                minDist = dist;
+                best = cell;
+            }
+        }
+
+        return best;
+    }
 }

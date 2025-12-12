@@ -66,7 +66,7 @@ public class Enemy : MonoBehaviour
         {
             // Find Boss UI in scene
             BossHealthBarUI bossUI = FindFirstObjectByType<BossHealthBarUI>(FindObjectsInactive.Include); // Unity 2023+
-            if (bossUI == null) bossUI = FindObjectOfType<BossHealthBarUI>(true); // Fallback to includeInactive=true
+            if (bossUI == null) bossUI = FindFirstObjectByType<BossHealthBarUI>(FindObjectsInactive.Include); // Fallback to includeInactive=true
             
             if (bossUI != null)
             {
@@ -185,7 +185,7 @@ public class Enemy : MonoBehaviour
         if (enemyData.enemyType == EnemyType.Boss)
         {
              BossHealthBarUI bossUI = FindFirstObjectByType<BossHealthBarUI>(FindObjectsInactive.Include);
-             if (bossUI == null) bossUI = FindObjectOfType<BossHealthBarUI>(true);
+             if (bossUI == null) bossUI = FindFirstObjectByType<BossHealthBarUI>(FindObjectsInactive.Include);
              
              if (bossUI != null)
              {
@@ -211,7 +211,7 @@ public class Enemy : MonoBehaviour
                 if (enemyData != null && enemyData.enemyType == EnemyType.Boss)
                 {
                     BossHealthBarUI bossUI = FindFirstObjectByType<BossHealthBarUI>();
-                    if (bossUI == null) bossUI = FindObjectOfType<BossHealthBarUI>();
+                    if (bossUI == null) bossUI = FindFirstObjectByType<BossHealthBarUI>();
                     if (bossUI != null) bossUI.ShowImmune();
                 }
                 
@@ -237,7 +237,7 @@ public class Enemy : MonoBehaviour
         if (enemyData != null && enemyData.enemyType == EnemyType.Boss)
         {
              BossHealthBarUI bossUI = FindFirstObjectByType<BossHealthBarUI>();
-             if (bossUI == null) bossUI = FindObjectOfType<BossHealthBarUI>();
+             if (bossUI == null) bossUI = FindFirstObjectByType<BossHealthBarUI>();
              
              if (bossUI != null)
              {
@@ -299,7 +299,7 @@ public class Enemy : MonoBehaviour
         if (enemyData != null && enemyData.enemyType == EnemyType.Boss)
         {
              BossHealthBarUI bossUI = FindFirstObjectByType<BossHealthBarUI>(FindObjectsInactive.Include);
-             if (bossUI == null) bossUI = FindObjectOfType<BossHealthBarUI>(true);
+             if (bossUI == null) bossUI = FindFirstObjectByType<BossHealthBarUI>(FindObjectsInactive.Include);
              
              if (bossUI != null) bossUI.Hide();
         }
